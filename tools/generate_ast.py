@@ -5,8 +5,8 @@ import os
 
 def main():
     command_lines_args = sys.argv[1:]
-    if len(command_lines_args) != 1:
-        print("Usage: python generate_ast.py [output_directory]", file=sys.stderr)
+    if command_lines_args:
+        print("Usage: python generate_ast.py", file=sys.stderr)
         sys.exit(64)
     define_ast(
         "Expr",
@@ -20,7 +20,7 @@ def main():
 
 
 def define_ast(base_name: str, types: List[str]):
-    file_path = os.path.join(os.getcwd(), base_name + '.py')
+    file_path = os.path.join(os.getcwd(), base_name.lower() + '.py')
     with open(file_path, "w") as file:
         # imports
         file.write('from lox_token import Token\n')
@@ -43,7 +43,7 @@ def define_ast(base_name: str, types: List[str]):
 
 
 def define_visitor(file: TextIO, base_name: str, class_names: List[str]):
-    file.write(f'class Visitor(ABC):\n')
+    file.write(f'class ExprVisitor(ABC):\n')
     for i, class_name in enumerate(class_names):
         file.write('    @abstractmethod\n')
         file.write(f'    def visit_{class_name.lower()}_{base_name.lower()}(self, expr):\n')
@@ -54,7 +54,7 @@ def define_visitor(file: TextIO, base_name: str, class_names: List[str]):
 
 def define_type(file: TextIO, base_name: str, class_name: str, fields: str):
     # class definition
-    file.write(f'class {class_name}({base_name}):\n')
+    file.write(f'class {class_name}{base_name}({base_name}):\n')
     # constructor
     file.write(f'    def __init__(self, {fields}):\n')
     fields = fields.split(', ')
@@ -64,7 +64,7 @@ def define_type(file: TextIO, base_name: str, class_name: str, fields: str):
         file.write(f'        self.{name} = {name}\n')
     file.write('\n')
     # accept method
-    file.write('    def accept(self, visitor: Visitor):\n')
+    file.write('    def accept(self, visitor: ExprVisitor):\n')
     file.write(f'        return visitor.visit_{class_name.lower()}_expr(self)\n')
 
 
