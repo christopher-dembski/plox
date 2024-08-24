@@ -1,7 +1,7 @@
 import unittest
 
 import Expr
-from AstPrinter import AstPrinter
+from ast_printer import AstPrinter
 from lox_token import Token
 from token_type import TokenType
 
