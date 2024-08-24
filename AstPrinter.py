@@ -1,0 +1,40 @@
+from lox_token import Token
+from token_type import TokenType
+
+import Expr
+
+
+class AstPrinter(Expr.Visitor):
+    def print(self, expr: Expr.Expr) -> str:
+        return expr.accept(self)
+
+    def visit_binary_expr(self, expr: Expr.Binary) -> str:
+        return self.parenthesize(expr.operator.lexeme, expr.left, expr.right)
+
+    def visit_grouping_expr(self, expr: Expr.Grouping) -> str:
+        return self.parenthesize('group', expr.expression)
+
+    def visit_literal_expr(self, expr: Expr.Literal) -> str:
+        return 'nil' if expr.value is None else str(expr.value)
+
+    def visit_unary_expr(self, expr: Expr.Unary) -> str:
+        return self.parenthesize(expr.operator.lexeme, expr.right)
+
+    def parenthesize(self, name: str, *exprs: Expr.Expr) -> str:
+        return '(' + name + " " + " ".join(expr.accept(self) for expr in exprs) + ')'
+
+
+def main():
+    expr = Expr.Binary(
+        Expr.Unary(
+            Token(TokenType.MINUS, '-', None, 1),
+            Expr.Literal(123)
+        ),
+        Token(TokenType.STAR, '*', None, 1),
+        Expr.Grouping(Expr.Literal(45.67))
+    )
+    print(AstPrinter().print(expr))
+
+
+if __name__ == '__main__':
+    main()
