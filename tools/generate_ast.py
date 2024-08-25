@@ -59,13 +59,20 @@ def define_type(file: TextIO, base_name: str, class_name: str, fields: str):
     file.write(f'    def __init__(self, {fields}):\n')
     fields = fields.split(', ')
     # fields
-    for field in fields:
-        name = field.split(': ')[0]
+    field_names = tuple(field.split(': ')[0] for field in fields)
+    for name in field_names:
         file.write(f'        self.{name} = {name}\n')
     file.write('\n')
     # accept method
     file.write('    def accept(self, visitor: ExprVisitor):\n')
-    file.write(f'        return visitor.visit_{class_name.lower()}_expr(self)\n')
+    file.write(f'        return visitor.visit_{class_name.lower()}_expr(self)\n\n')
+    # __eq__ method
+    file.write('    def __eq__(self, other):\n')
+    file.write('        if type(self) != type(other):\n')
+    file.write('            return False\n')
+    # this is not very readable... but it is cool that you can have nested fstrings
+    file.write(f'        return {" and ".join(f"self.{name} == other.{name}" for name in field_names)}')
+    file.write('\n')
 
 
 if __name__ == '__main__':

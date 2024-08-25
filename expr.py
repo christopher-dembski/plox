@@ -35,6 +35,11 @@ class BinaryExpr(Expr):
     def accept(self, visitor: ExprVisitor):
         return visitor.visit_binary_expr(self)
 
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+        return self.left == other.left and self.operator == other.operator and self.right == other.right
+
 
 class GroupingExpr(Expr):
     def __init__(self, expression: Expr):
@@ -42,6 +47,11 @@ class GroupingExpr(Expr):
 
     def accept(self, visitor: ExprVisitor):
         return visitor.visit_grouping_expr(self)
+
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+        return self.expression == other.expression
 
 
 class LiteralExpr(Expr):
@@ -51,6 +61,11 @@ class LiteralExpr(Expr):
     def accept(self, visitor: ExprVisitor):
         return visitor.visit_literal_expr(self)
 
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+        return self.value == other.value
+
 
 class UnaryExpr(Expr):
     def __init__(self, operator: Token, right: Expr):
@@ -59,3 +74,8 @@ class UnaryExpr(Expr):
 
     def accept(self, visitor: ExprVisitor):
         return visitor.visit_unary_expr(self)
+
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+        return self.operator == other.operator and self.right == other.right
