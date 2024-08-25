@@ -16,10 +16,7 @@ class TestAstPrinter(unittest.TestCase):
             Token(TokenType.STAR, '*', None, 1),
             GroupingExpr(LiteralExpr(45.67))
         )
-        self.assertEqual(
-            AstPrinter().print(expr),
-            '(* (- 123) (group 45.67))'
-        )
+        self.assertEqual('(* (- 123) (group 45.67))', AstPrinter().build_ast_string(expr))
 
 
 if __name__ == '__main__':

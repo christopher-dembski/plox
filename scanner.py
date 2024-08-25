@@ -1,6 +1,8 @@
+from typing import Sequence
+
+from lox import Lox
 from lox_token import Token
 from token_type import TokenType
-from typing import List
 
 
 class Scanner:
@@ -30,7 +32,7 @@ class Scanner:
         self.line = 1
         self.tokens = []
 
-    def scan_tokens(self) -> List[TokenType]:
+    def scan_tokens(self) -> Sequence[Token]:
         while not self.is_at_end():
             self.start = self.current
             self.scan_token()
@@ -157,7 +159,3 @@ class Scanner:
     @staticmethod
     def is_alpha_numeric(char: str) -> bool:
         return Scanner.is_alpha(char) or Scanner.is_digit(char)
-
-
-# avoid circular import
-from lox import Lox

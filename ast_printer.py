@@ -5,7 +5,7 @@ from expr import Expr, ExprVisitor, BinaryExpr, GroupingExpr, LiteralExpr, Unary
 
 
 class AstPrinter(ExprVisitor):
-    def print(self, expr: Expr) -> str:
+    def build_ast_string(self, expr: Expr) -> str:
         return expr.accept(self)
 
     def visit_binary_expr(self, expr: BinaryExpr) -> str:
@@ -15,7 +15,11 @@ class AstPrinter(ExprVisitor):
         return self.parenthesize('group', expr.expression)
 
     def visit_literal_expr(self, expr: LiteralExpr) -> str:
-        return 'nil' if expr.value is None else str(expr.value)
+        if expr.value is None:
+            return 'nil'
+        if type(expr.value) is str:
+            return f'"{expr.value}"'
+        return str(expr.value)
 
     def visit_unary_expr(self, expr: UnaryExpr) -> str:
         return self.parenthesize(expr.operator.lexeme, expr.right)
@@ -33,7 +37,7 @@ def main():
         Token(TokenType.STAR, '*', None, 1),
         GroupingExpr(LiteralExpr(45.67))
     )
-    print(AstPrinter().print(expr))
+    print(AstPrinter().build_ast_string(expr))
 
 
 if __name__ == '__main__':
