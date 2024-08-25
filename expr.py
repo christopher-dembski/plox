@@ -40,6 +40,9 @@ class BinaryExpr(Expr):
             return False
         return self.left == other.left and self.operator == other.operator and self.right == other.right
 
+    def __repr__(self):
+        return f'BinaryExpr(left={self.left}, operator={self.operator}, right={self.right})'
+
 
 class GroupingExpr(Expr):
     def __init__(self, expression: Expr):
@@ -52,6 +55,9 @@ class GroupingExpr(Expr):
         if type(self) != type(other):
             return False
         return self.expression == other.expression
+
+    def __repr__(self):
+        return f'GroupingExpr(expression={self.expression})'
 
 
 class LiteralExpr(Expr):
@@ -66,6 +72,9 @@ class LiteralExpr(Expr):
             return False
         return self.value == other.value
 
+    def __repr__(self):
+        return f'LiteralExpr(value={self.value})'
+
 
 class UnaryExpr(Expr):
     def __init__(self, operator: Token, right: Expr):
@@ -79,3 +88,6 @@ class UnaryExpr(Expr):
         if type(self) != type(other):
             return False
         return self.operator == other.operator and self.right == other.right
+
+    def __repr__(self):
+        return f'UnaryExpr(operator={self.operator}, right={self.right})'

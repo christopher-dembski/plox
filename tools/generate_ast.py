@@ -30,31 +30,31 @@ def define_ast(base_name: str, types: List[str]):
         file.write('    @abstractmethod\n')
         file.write('    def accept(self, visitor):\n')
         file.write('        pass\n\n\n')
-        class_names = [type_string.split('::')[0].strip() for type_string in types]
+        expr_names = [type_string.split('::')[0].strip() for type_string in types]
         field_lists = [type_string.split('::')[1].strip() for type_string in types]
         # visitor abstract class
-        define_visitor(file, base_name, class_names)
+        define_visitor(file, base_name, expr_names)
         # subclasses
-        for i, (class_name, fields) in enumerate(zip(class_names, field_lists)):
-            define_type(file, base_name, class_name, fields)
+        for i, (expr_name, fields) in enumerate(zip(expr_names, field_lists)):
+            define_type(file, base_name, expr_name, fields)
             is_last_type = i == len(types) - 1
             if not is_last_type:
                 file.write('\n\n')
 
 
-def define_visitor(file: TextIO, base_name: str, class_names: List[str]):
+def define_visitor(file: TextIO, base_name: str, expr_names: List[str]):
     file.write(f'class ExprVisitor(ABC):\n')
-    for i, class_name in enumerate(class_names):
+    for i, expr_name in enumerate(expr_names):
         file.write('    @abstractmethod\n')
-        file.write(f'    def visit_{class_name.lower()}_{base_name.lower()}(self, expr):\n')
+        file.write(f'    def visit_{expr_name.lower()}_{base_name.lower()}(self, expr):\n')
         file.write('        pass\n')
-        is_last_type = i == len(class_names) - 1
+        is_last_type = i == len(expr_names) - 1
         file.write('\n\n' if is_last_type else '\n')
 
 
-def define_type(file: TextIO, base_name: str, class_name: str, fields: str):
+def define_type(file: TextIO, base_name: str, expr_name: str, fields: str):
     # class definition
-    file.write(f'class {class_name}{base_name}({base_name}):\n')
+    file.write(f'class {expr_name}{base_name}({base_name}):\n')
     # constructor
     file.write(f'    def __init__(self, {fields}):\n')
     fields = fields.split(', ')
@@ -65,13 +65,18 @@ def define_type(file: TextIO, base_name: str, class_name: str, fields: str):
     file.write('\n')
     # accept method
     file.write('    def accept(self, visitor: ExprVisitor):\n')
-    file.write(f'        return visitor.visit_{class_name.lower()}_expr(self)\n\n')
+    file.write(f'        return visitor.visit_{expr_name.lower()}_expr(self)\n\n')
     # __eq__ method
     file.write('    def __eq__(self, other):\n')
     file.write('        if type(self) != type(other):\n')
     file.write('            return False\n')
     # this is not very readable... but it is cool that you can have nested fstrings
     file.write(f'        return {" and ".join(f"self.{name} == other.{name}" for name in field_names)}')
+    file.write('\n\n')
+    # __repr__ method
+    file.write('    def __repr__(self):\n')
+    string_representation = f'{expr_name}{base_name}({", ".join(f"{name}={{self.{name}}}" for name in field_names)})'
+    file.write(f"        return f'{string_representation}'")
     file.write('\n')
 
 

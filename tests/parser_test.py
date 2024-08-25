@@ -21,7 +21,7 @@ class TestParser(unittest.TestCase):
             Token(TokenType.EOF, '', None, 1)
         ]
         expression = Parser(tokens).parse()
-        expected = BinaryExpr(
+        expected_expression = BinaryExpr(
             UnaryExpr(
                 Token(TokenType.MINUS, '-', None, 1),
                 LiteralExpr(56)
@@ -36,12 +36,12 @@ class TestParser(unittest.TestCase):
             )
         )
         # equality of expressions is checked recursively
-        self.assertEqual(expression, expected)
-        # to help with debugging
-        # it is easier to see the difference between the expected and actual values using the string representation
         self.assertEqual(
-            '(* (- 56) (group (+ True "hello")))',
-            AstPrinter().build_ast_string(expression)
+            expected_expression,
+            expression,
+            msg=f'{AstPrinter().build_ast_string(expression)} '
+                f'should equal '
+                f'{AstPrinter().build_ast_string(expected_expression)}'
         )
 
     if __name__ == '__main__':
