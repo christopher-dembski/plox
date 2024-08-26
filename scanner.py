@@ -1,6 +1,5 @@
 from typing import Sequence
 
-from lox import Lox
 from lox_token import Token
 from token_type import TokenType
 
@@ -159,3 +158,6 @@ class Scanner:
     @staticmethod
     def is_alpha_numeric(char: str) -> bool:
         return Scanner.is_alpha(char) or Scanner.is_digit(char)
+
+# avoid circular import
+from lox import Lox

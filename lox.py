@@ -1,12 +1,13 @@
 import sys
 
-from ast_printer import AstPrinter
 from lox_token import Token
 from token_type import TokenType
+from runtime_exception import RuntimeException
 
 
 class Lox:
-    HAD_ERROR = False
+    HAD_PARSER_ERROR = False
+    HAD_RUNTIME_EXCEPTION = False
 
     @staticmethod
     def main() -> None:
@@ -24,8 +25,10 @@ class Lox:
         with open(file_path, 'r') as file:
             source = file.read()
         Lox.run(source)
-        if Lox.HAD_ERROR:
+        if Lox.HAD_PARSER_ERROR:
             sys.exit(65)
+        elif Lox.HAD_RUNTIME_EXCEPTION:
+            sys.exit(70)
 
     @staticmethod
     def run_prompt() -> None:
@@ -40,14 +43,14 @@ class Lox:
         tokens = scanner.scan_tokens()
         parser = Parser(tokens)
         expression = parser.parse()
-        if Lox.HAD_ERROR:
+        if Lox.HAD_PARSER_ERROR:
             return
-        print(AstPrinter().build_ast_string(expression))
+        Lox.INTERPRETER.interpret(expression)
 
     @staticmethod
     def report(line_number: int, where: str, message: str):
         print(f'[line {line_number}] Error {where}: {message}', file=sys.stderr)
-        Lox.HAD_ERROR = True
+        Lox.HAD_PARSER_ERROR = True
 
     @staticmethod
     def error(line_number: int, where: str = '', message: str = '') -> None:
@@ -58,10 +61,19 @@ class Lox:
         where = 'at end' if token.type == TokenType.EOF else f"at '{token.lexeme}'"
         Lox.report(token.line, where, message)
 
+    @staticmethod
+    def runtime_exception(exception: RuntimeException) -> None:
+        print(f'{exception}\n[line {exception.token.line}]', file=sys.stderr)
+        Lox.HAD_RUNTIME_EXCEPTION = True
+
 
 # avoid circular imports
 from parser import Parser
 from scanner import Scanner
+from interpreter import Interpreter
+
+# we need to instantiate interpreter here after the interpreter module is imported
+Lox.INTERPRETER = Interpreter()
 
 if __name__ == '__main__':
     Lox.main()
