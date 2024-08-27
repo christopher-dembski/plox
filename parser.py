@@ -1,7 +1,8 @@
 from typing import Sequence
 
 from lox_token import Token, TokenType
-from expr import Expr, BinaryExpr, UnaryExpr, LiteralExpr, GroupingExpr
+from expr import Expr, BinaryExpr, UnaryExpr, LiteralExpr, GroupingExpr, VariableExpr
+from stmt import Stmt, PrintStmt, ExpressionStmt, VarStmt
 
 
 class ParserError(Exception):
@@ -30,14 +31,43 @@ class Parser:
         self.tokens = tokens
         self.current = 0
 
-    def parse(self):
-        try:
-            return self.expression()
-        except ParserError:
-            return None
+    def parse(self) -> Sequence[Stmt]:
+        statements = []
+        while not self.is_at_end():
+            statements.append(self.declaration())
+        return statements
 
     def expression(self) -> Expr:
         return self.equality()
+
+    def declaration(self) -> Stmt:
+        try:
+            if self.match(TokenType.VAR):
+                return self.var_declaration()
+            return self.statement()
+        except ParserError:
+            self.synchronize()
+
+    def statement(self) -> Stmt:
+        if self.match(TokenType.PRINT):
+            return self.print_statement()
+        return self.expression_statement()
+
+    def print_statement(self) -> PrintStmt:
+        value = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expect ';' after value.")
+        return PrintStmt(value)
+
+    def var_declaration(self) -> Stmt:
+        name = self.consume(TokenType.IDENTIFIER, "Expected identifier after var.")
+        initializer = self.expression() if self.match(TokenType.EQUAL) else None
+        self.consume(TokenType.SEMICOLON, "Expect ';' after declaration.")
+        return VarStmt(name, initializer)
+
+    def expression_statement(self) -> ExpressionStmt:
+        value = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expect ';' after expression.")
+        return ExpressionStmt(value)
 
     def equality(self) -> Expr:
         expr = self.comparison()
@@ -71,6 +101,9 @@ class Parser:
     def primary(self) -> Expr:
         if self.match(TokenType.NUMBER, TokenType.STRING):
             return LiteralExpr(self.previous().literal)
+
+        if self.match(TokenType.IDENTIFIER):
+            return VariableExpr(self.previous())
 
         if self.match(TokenType.TRUE):
             return LiteralExpr(True)
@@ -120,7 +153,7 @@ class Parser:
     def synchronize(self):
         self.advance()
         while not self.is_at_end():
-            if self.previous().type == TokenType.SEMICOLON or self.peek() in Parser.TERMINATE_SYNCHRONIZE_TOKEN_TYPES:
+            if self.previous().type == TokenType.SEMICOLON or self.peek().type in Parser.TERMINATE_SYNCHRONIZE_TOKEN_TYPES:
                 return
             self.advance()
 
@@ -128,6 +161,7 @@ class Parser:
     def error(token: Token, messge: str) -> ParserError:
         Lox.error_from_token(token, messge)
         return ParserError()
+
 
 # avoid circular import
 from lox import Lox

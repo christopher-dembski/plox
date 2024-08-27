@@ -16,7 +16,7 @@ class Lox:
             print('Usage: plox [script]')
             sys.exit(64)
         elif len(command_line_args) == 1:
-            Lox.run_file(sys.argv[0])
+            Lox.run_file(command_line_args[0])
         else:
             Lox.run_prompt()
 
@@ -42,10 +42,10 @@ class Lox:
         scanner = Scanner(source)
         tokens = scanner.scan_tokens()
         parser = Parser(tokens)
-        expression = parser.parse()
+        statements = parser.parse()
         if Lox.HAD_PARSER_ERROR:
             return
-        Lox.INTERPRETER.interpret(expression)
+        Lox.INTERPRETER.interpret(statements)
 
     @staticmethod
     def report(line_number: int, where: str, message: str):

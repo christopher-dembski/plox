@@ -1,14 +1,17 @@
-from lox_token import Token
 from abc import ABC, abstractmethod
+
+from lox_token import Token
 
 
 class Expr(ABC):
+
     @abstractmethod
     def accept(self, visitor):
         pass
 
 
 class ExprVisitor(ABC):
+
     @abstractmethod
     def visit_binary_expr(self, expr):
         pass
@@ -25,8 +28,13 @@ class ExprVisitor(ABC):
     def visit_unary_expr(self, expr):
         pass
 
+    @abstractmethod
+    def visit_variable_expr(self, expr):
+        pass
+
 
 class BinaryExpr(Expr):
+
     def __init__(self, left: Expr, operator: Token, right: Expr):
         self.left = left
         self.operator = operator
@@ -45,6 +53,7 @@ class BinaryExpr(Expr):
 
 
 class GroupingExpr(Expr):
+
     def __init__(self, expression: Expr):
         self.expression = expression
 
@@ -61,6 +70,7 @@ class GroupingExpr(Expr):
 
 
 class LiteralExpr(Expr):
+
     def __init__(self, value: object):
         self.value = value
 
@@ -77,6 +87,7 @@ class LiteralExpr(Expr):
 
 
 class UnaryExpr(Expr):
+
     def __init__(self, operator: Token, right: Expr):
         self.operator = operator
         self.right = right
@@ -91,3 +102,20 @@ class UnaryExpr(Expr):
 
     def __repr__(self):
         return f'UnaryExpr(operator={self.operator}, right={self.right})'
+
+
+class VariableExpr(Expr):
+
+    def __init__(self, name: Token):
+        self.name = name
+
+    def accept(self, visitor: ExprVisitor):
+        return visitor.visit_variable_expr(self)
+
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+        return self.name == other.name
+
+    def __repr__(self):
+        return f'VariableExpr(name={self.name})'

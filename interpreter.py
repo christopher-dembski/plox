@@ -1,18 +1,26 @@
+from typing import Sequence
+
 from lox import Lox
 from token_type import TokenType
 from lox_token import Token
-from expr import ExprVisitor, Expr, LiteralExpr, GroupingExpr, UnaryExpr, BinaryExpr
+from expr import ExprVisitor, Expr, LiteralExpr, GroupingExpr, UnaryExpr, BinaryExpr, VariableExpr
+from stmt import StmtVisitor, Stmt, ExpressionStmt, PrintStmt, VarStmt
+from environment import Environment
 from runtime_exception import RuntimeException
 
 
-class Interpreter(ExprVisitor):
+class Interpreter(ExprVisitor, StmtVisitor):
+    ENVIRONMENT = Environment()
 
-    def interpret(self, expr: Expr) -> None:
+    def interpret(self, stmts: Sequence[Stmt]) -> None:
         try:
-            value = self.evaluate(expr)
-            print(Interpreter.stringify_value(value))
+            for stmt in stmts:
+                self.execute(stmt)
         except RuntimeException as exception:
             Lox.runtime_exception(exception)
+
+    def execute(self, stmt: Stmt) -> None:
+        stmt.accept(self)
 
     def visit_literal_expr(self, expr: LiteralExpr) -> object:
         return expr.value
@@ -69,7 +77,21 @@ class Interpreter(ExprVisitor):
             case _:
                 raise AssertionError('This case should not be reachable. Invalid operator for binary exression.')
 
-    def evaluate(self, expr: Expr) -> object:
+    def visit_expression_stmt(self, stmt: ExpressionStmt) -> None:
+        self.evaluate(stmt.expression)
+
+    def visit_print_stmt(self, stmt: PrintStmt) -> None:
+        value = self.evaluate(stmt.expression)
+        print(self.stringify_value(value))
+
+    def visit_var_stmt(self, stmt: VarStmt) -> None:
+        value = self.evaluate(stmt.initializer) if stmt.initializer else None
+        Interpreter.ENVIRONMENT.define(stmt.name.lexeme, value)
+
+    def visit_variable_expr(self, expr: VariableExpr) -> object:
+        return Interpreter.ENVIRONMENT.get(expr.name)
+
+    def evaluate(self, expr: Expr | Stmt) -> object:
         return expr.accept(self)
 
     @staticmethod
