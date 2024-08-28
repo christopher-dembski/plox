@@ -1,7 +1,7 @@
 from typing import Sequence
 
 from lox_token import Token, TokenType
-from expr import Expr, BinaryExpr, UnaryExpr, LiteralExpr, GroupingExpr, VariableExpr
+from expr import Expr, BinaryExpr, UnaryExpr, LiteralExpr, GroupingExpr, VariableExpr, AssignmentExpr
 from stmt import Stmt, PrintStmt, ExpressionStmt, VarStmt
 
 
@@ -38,7 +38,7 @@ class Parser:
         return statements
 
     def expression(self) -> Expr:
-        return self.equality()
+        return self.assignment()
 
     def declaration(self) -> Stmt:
         try:
@@ -68,6 +68,17 @@ class Parser:
         value = self.expression()
         self.consume(TokenType.SEMICOLON, "Expect ';' after expression.")
         return ExpressionStmt(value)
+
+    def assignment(self) -> Expr:
+        expr = self.equality()
+        if self.match(TokenType.EQUAL):
+            value = self.assignment()
+            if type(expr) is VariableExpr:
+                # we know expr is of typeVariableExpr and has a name attribute
+                return AssignmentExpr(expr.name, value)
+            equals_token = self.previous()
+            Lox.error_from_token(equals_token, 'Identifier expected.')
+        return expr
 
     def equality(self) -> Expr:
         expr = self.comparison()

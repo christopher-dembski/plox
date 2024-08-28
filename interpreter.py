@@ -3,7 +3,7 @@ from typing import Sequence
 from lox import Lox
 from token_type import TokenType
 from lox_token import Token
-from expr import ExprVisitor, Expr, LiteralExpr, GroupingExpr, UnaryExpr, BinaryExpr, VariableExpr
+from expr import ExprVisitor, Expr, LiteralExpr, GroupingExpr, UnaryExpr, BinaryExpr, VariableExpr, AssignmentExpr
 from stmt import StmtVisitor, Stmt, ExpressionStmt, PrintStmt, VarStmt
 from environment import Environment
 from runtime_exception import RuntimeException
@@ -87,6 +87,11 @@ class Interpreter(ExprVisitor, StmtVisitor):
     def visit_var_stmt(self, stmt: VarStmt) -> None:
         value = self.evaluate(stmt.initializer) if stmt.initializer else None
         Interpreter.ENVIRONMENT.define(stmt.name.lexeme, value)
+
+    def visit_assignment_expr(self, expr: AssignmentExpr) -> object:
+        value = self.evaluate(expr.value)
+        Interpreter.ENVIRONMENT.assign(expr.name, value)
+        return value
 
     def visit_variable_expr(self, expr: VariableExpr) -> object:
         return Interpreter.ENVIRONMENT.get(expr.name)

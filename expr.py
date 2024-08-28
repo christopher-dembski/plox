@@ -32,6 +32,10 @@ class ExprVisitor(ABC):
     def visit_variable_expr(self, expr):
         pass
 
+    @abstractmethod
+    def visit_assignment_expr(self, expr):
+        pass
+
 
 class BinaryExpr(Expr):
 
@@ -119,3 +123,21 @@ class VariableExpr(Expr):
 
     def __repr__(self):
         return f'VariableExpr(name={self.name})'
+
+
+class AssignmentExpr(Expr):
+
+    def __init__(self, name: Token, value: Expr):
+        self.name = name
+        self.value = value
+
+    def accept(self, visitor: ExprVisitor):
+        return visitor.visit_assignment_expr(self)
+
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+        return self.name == other.name and self.value == other.value
+
+    def __repr__(self):
+        return f'AssignmentExpr(name={self.name}, value={self.value})'

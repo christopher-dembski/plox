@@ -1,12 +1,22 @@
 from lox_token import Token
 from token_type import TokenType
+from stmt import StmtVisitor, ExpressionStmt, PrintStmt, VarStmt, Stmt
+from expr import Expr, ExprVisitor, BinaryExpr, GroupingExpr, LiteralExpr, UnaryExpr, AssignmentExpr, VariableExpr
 
-from expr import Expr, ExprVisitor, BinaryExpr, GroupingExpr, LiteralExpr, UnaryExpr
 
+class AstPrinter(ExprVisitor, StmtVisitor):
 
-class AstPrinter(ExprVisitor):
-    def build_ast_string(self, expr: Expr) -> str:
+    def build_ast_string(self, expr: Expr | Stmt) -> str:
         return expr.accept(self)
+
+    def visit_var_stmt(self, stmt: VarStmt) -> str:
+        return f'stmt(var {stmt.name.lexeme})'
+
+    def visit_expression_stmt(self, stmt: ExpressionStmt) -> str:
+        return f'stmt{stmt.expression.accept(self)}'
+
+    def visit_print_stmt(self, stmt: PrintStmt) -> str:
+        return f'stmt(print {stmt.expression.accept(self)})'
 
     def visit_binary_expr(self, expr: BinaryExpr) -> str:
         return self.parenthesize(expr.operator.lexeme, expr.left, expr.right)
@@ -23,6 +33,12 @@ class AstPrinter(ExprVisitor):
 
     def visit_unary_expr(self, expr: UnaryExpr) -> str:
         return self.parenthesize(expr.operator.lexeme, expr.right)
+
+    def visit_variable_expr(self, expr: VariableExpr) -> str:
+        return expr.name.lexeme
+
+    def visit_assignment_expr(self, expr: AssignmentExpr) -> str:
+        return f'(= {expr.name.lexeme} {expr.value.accept(self)})'
 
     def parenthesize(self, name: str, *exprs: Expr) -> str:
         return '(' + name + " " + " ".join(expr.accept(self) for expr in exprs) + ')'

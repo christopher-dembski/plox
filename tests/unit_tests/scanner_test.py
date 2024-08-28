@@ -2,9 +2,11 @@ import unittest
 
 from scanner import Scanner
 from lox_token import Token, TokenType
+from tests.test_helpers.test_case_with_helpers import TestCaseWithHelpers
 
 
-class TestScanner(unittest.TestCase):
+class TestScanner(TestCaseWithHelpers):
+
     def test_scan_tokens(self):
         scanner = Scanner(
             'x = 3\n'
