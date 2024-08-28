@@ -1,10 +1,14 @@
 from lox_token import Token
 from token_type import TokenType
-from stmt import StmtVisitor, ExpressionStmt, PrintStmt, VarStmt, Stmt, BlockStmt
-from expr import Expr, ExprVisitor, BinaryExpr, GroupingExpr, LiteralExpr, UnaryExpr, AssignmentExpr, VariableExpr
+from stmt import ExpressionStmt, PrintStmt, VarStmt, Stmt, BlockStmt
+from expr import Expr, BinaryExpr, GroupingExpr, LiteralExpr, UnaryExpr, AssignmentExpr, VariableExpr
 
 
-class AstPrinter(ExprVisitor, StmtVisitor):
+# AstPrinter should inherit from the abstract base classes 'StmtVisitor' and 'ExprVisitor',
+# however, to avoid having to maintain this class when new statements and expressions are added,
+# we do not inherit from them to avoid an error in the unit tests
+
+class AstPrinter:
 
     def build_ast_string(self, expr: Expr | Stmt) -> str:
         return expr.accept(self)
