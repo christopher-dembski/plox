@@ -37,6 +37,38 @@ class TestDeclarationAndAssignment(TestCaseWithHelpers):
     def test_left_hand_side_not_identifier(self):
         self.assert_prints_to_std_err('2 = 2;')
 
+    def test_block_scope(self):
+        source = 'var a = "global a";' \
+                 'var b = "global b";' \
+                 'var c = "global c";' \
+                 '{' \
+                 '  var a = "outer a";' \
+                 '  var b = "outer b";' \
+                 '  {' \
+                 '    var a = "inner a";' \
+                 '    print a;' \
+                 '    print b;' \
+                 '    print c;' \
+                 '  }' \
+                 '  print a;' \
+                 '  print b;' \
+                 '  print c;' \
+                 '}' \
+                 'print a;' \
+                 'print b;' \
+                 'print c;'
+        self.assert_prints(source, [
+            'inner a',
+            'outer b',
+            'global c',
+            'outer a',
+            'outer b',
+            'global c',
+            'global a',
+            'global b',
+            'global c'
+        ])
+
 
 if __name__ == '__main__':
     unittest.main()

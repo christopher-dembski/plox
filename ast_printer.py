@@ -1,6 +1,6 @@
 from lox_token import Token
 from token_type import TokenType
-from stmt import StmtVisitor, ExpressionStmt, PrintStmt, VarStmt, Stmt
+from stmt import StmtVisitor, ExpressionStmt, PrintStmt, VarStmt, Stmt, BlockStmt
 from expr import Expr, ExprVisitor, BinaryExpr, GroupingExpr, LiteralExpr, UnaryExpr, AssignmentExpr, VariableExpr
 
 
@@ -8,6 +8,10 @@ class AstPrinter(ExprVisitor, StmtVisitor):
 
     def build_ast_string(self, expr: Expr | Stmt) -> str:
         return expr.accept(self)
+
+    def visit_block_stmt(self, stmt: BlockStmt) -> str:
+        statements_list = ', '.join(statement.accept(self) for statement in stmt.statements)
+        return f'block({statements_list})'
 
     def visit_var_stmt(self, stmt: VarStmt) -> str:
         return f'stmt(var {stmt.name.lexeme})'

@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Iterable
 
 from lox_token import Token
 from expr import Expr
@@ -23,6 +24,10 @@ class StmtVisitor(ABC):
 
     @abstractmethod
     def visit_print_stmt(self, stmt):
+        pass
+
+    @abstractmethod
+    def visit_block_stmt(self, stmt):
         pass
 
 
@@ -76,3 +81,20 @@ class PrintStmt(Stmt):
 
     def __repr__(self):
         return f'PrintStmt(expression={self.expression})'
+
+
+class BlockStmt(Stmt):
+
+    def __init__(self, statements: Iterable[Stmt]):
+        self.statements = statements
+
+    def accept(self, visitor: StmtVisitor):
+        return visitor.visit_block_stmt(self)
+
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+        return self.statements == other.statements
+
+    def __repr__(self):
+        return f'BlockStmt(statements={self.statements})'

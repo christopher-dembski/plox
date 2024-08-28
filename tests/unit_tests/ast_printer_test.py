@@ -3,7 +3,7 @@ import unittest
 from lox_token import Token
 from token_type import TokenType
 from expr import BinaryExpr, UnaryExpr, LiteralExpr, GroupingExpr, AssignmentExpr, VariableExpr
-from stmt import VarStmt, ExpressionStmt, PrintStmt
+from stmt import VarStmt, ExpressionStmt, PrintStmt, BlockStmt
 from tests.test_helpers.test_case_with_helpers import TestCaseWithHelpers
 
 
@@ -52,6 +52,18 @@ class TestAstPrinter(TestCaseWithHelpers):
     def test_print_statement(self):
         ast = PrintStmt(LiteralExpr(9))
         self.assertEqual('stmt(print 9)', self.build(ast))
+
+    def test_block_statement(self):
+        ast = BlockStmt([
+            ExpressionStmt(
+                AssignmentExpr(
+                    Token(TokenType.IDENTIFIER, 'a', None, 1),
+                    LiteralExpr(5)
+                )
+            ),
+            PrintStmt(LiteralExpr("hello"))
+        ])
+        self.assertEqual('block(stmt(= a 5), stmt(print "hello"))', self.build(ast))
 
 
 if __name__ == '__main__':

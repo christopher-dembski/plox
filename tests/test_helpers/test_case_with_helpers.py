@@ -24,8 +24,16 @@ class TestCaseWithHelpers(unittest.TestCase):
         with redirect_stdout(StringIO()) as std_out:
             with redirect_stderr(StringIO()) as std_err:
                 Lox.run(source)
-        self.assertEqual(expcted_std_out, std_out.getvalue().rstrip('\n'))
-        self.assertEqual('', std_err.getvalue().rstrip('\n'))
+        self.assertEqual(
+            expcted_std_out,
+            std_out.getvalue().rstrip('\n'),
+            'Incorrect values printed to std_out.'
+        )
+        self.assertEqual(
+            '',
+            std_err.getvalue().rstrip('\n'),
+            "Expected no error to be printed to std_err."
+        )
 
     def assert_prints_to_std_err(self, source: str):
         with redirect_stderr(StringIO()) as std_err:

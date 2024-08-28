@@ -4,7 +4,7 @@ from lox import Lox
 from token_type import TokenType
 from lox_token import Token
 from expr import ExprVisitor, Expr, LiteralExpr, GroupingExpr, UnaryExpr, BinaryExpr, VariableExpr, AssignmentExpr
-from stmt import StmtVisitor, Stmt, ExpressionStmt, PrintStmt, VarStmt
+from stmt import StmtVisitor, Stmt, ExpressionStmt, PrintStmt, VarStmt, BlockStmt
 from environment import Environment
 from runtime_exception import RuntimeException
 
@@ -83,6 +83,15 @@ class Interpreter(ExprVisitor, StmtVisitor):
     def visit_print_stmt(self, stmt: PrintStmt) -> None:
         value = self.evaluate(stmt.expression)
         print(self.stringify_value(value))
+
+    def visit_block_stmt(self, stmt: BlockStmt) -> None:
+        previous_environment = Interpreter.ENVIRONMENT
+        Interpreter.ENVIRONMENT = Environment(previous_environment)
+        try:
+            for statement in stmt.statements:
+                statement.accept(self)
+        finally:
+            Interpreter.ENVIRONMENT = previous_environment
 
     def visit_var_stmt(self, stmt: VarStmt) -> None:
         value = self.evaluate(stmt.initializer) if stmt.initializer else None

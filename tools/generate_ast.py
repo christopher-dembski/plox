@@ -25,6 +25,7 @@ def main():
             "Expression   :: expression: Expr",
             "Var :: name: Token, initializer: Expr",
             "Print   :: expression: Expr",
+            "Block :: statements: Iterable[Stmt]"
         ]
     )
 
@@ -33,8 +34,11 @@ def define_ast(base_name: str, types: List[str]):
     file_path = os.path.join(os.getcwd(), base_name.lower() + '.py')
     with open(file_path, "w") as file:
         # imports
-        file.write('from abc import ABC, abstractmethod\n\n')
-        if any(type_string.find('Token') != -1 for type_string in types):
+        file.write('from abc import ABC, abstractmethod\n')
+        if any(type_string.count('Iterable') for type_string in types):
+            file.write('from typing import Iterable\n')
+        file.write('\n')
+        if any(type_string.count('Token') for type_string in types):
             file.write('from lox_token import Token\n')
         if base_name != 'Expr':
             file.write('from expr import Expr\n')
