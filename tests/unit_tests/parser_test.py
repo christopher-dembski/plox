@@ -6,7 +6,7 @@ from token_type import TokenType
 from stmt import ExpressionStmt
 from expr import BinaryExpr, UnaryExpr, LiteralExpr, GroupingExpr
 from parser import Parser
-from ast_printer import AstPrinter
+from tools.ast_printer import AstPrinter
 
 
 class TestParser(TestCaseWithHelpers):

@@ -4,7 +4,7 @@ from io import StringIO
 from typing import List
 
 from lox import Lox  # lox import must be above interpreter import to avoid circular import
-from ast_printer import AstPrinter
+from tools.ast_printer import AstPrinter
 from expr import Expr
 from interpreter import Interpreter
 from environment import Environment
