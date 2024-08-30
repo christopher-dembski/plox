@@ -30,6 +30,10 @@ class StmtVisitor(ABC):
     def visit_block_stmt(self, stmt):
         pass
 
+    @abstractmethod
+    def visit_if_stmt(self, stmt):
+        pass
+
 
 class ExpressionStmt(Stmt):
 
@@ -98,3 +102,22 @@ class BlockStmt(Stmt):
 
     def __repr__(self):
         return f'BlockStmt(statements={self.statements})'
+
+
+class IfStmt(Stmt):
+
+    def __init__(self, condition: Expr, if_branch: Stmt, else_branch: Stmt):
+        self.condition = condition
+        self.if_branch = if_branch
+        self.else_branch = else_branch
+
+    def accept(self, visitor: StmtVisitor):
+        return visitor.visit_if_stmt(self)
+
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+        return self.condition == other.condition and self.if_branch == other.if_branch and self.else_branch == other.else_branch
+
+    def __repr__(self):
+        return f'IfStmt(condition={self.condition}, if_branch={self.if_branch}, else_branch={self.else_branch})'

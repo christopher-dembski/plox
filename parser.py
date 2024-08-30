@@ -2,7 +2,7 @@ from typing import Sequence
 
 from lox_token import Token, TokenType
 from expr import Expr, BinaryExpr, UnaryExpr, LiteralExpr, GroupingExpr, VariableExpr, AssignmentExpr
-from stmt import Stmt, PrintStmt, ExpressionStmt, VarStmt, BlockStmt
+from stmt import Stmt, PrintStmt, ExpressionStmt, VarStmt, BlockStmt, IfStmt
 
 
 class ParserError(Exception):
@@ -49,6 +49,8 @@ class Parser:
             self.synchronize()
 
     def statement(self) -> Stmt:
+        if self.match(TokenType.IF):
+            return self.if_statement()
         if self.match(TokenType.PRINT):
             return self.print_statement()
         if self.match(TokenType.LEFT_BRACE):
@@ -59,6 +61,14 @@ class Parser:
         value = self.expression()
         self.consume(TokenType.SEMICOLON, "Expect ';' after value.")
         return PrintStmt(value)
+
+    def if_statement(self) -> IfStmt:
+        self.consume(TokenType.LEFT_PAREN, "Expect '(' atfer if.")
+        condition = self.expression()
+        self.consume(TokenType.RIGHT_PAREN, "Expect ')' after condition if statement condition.")
+        if_branch = self.statement()
+        else_branch = self.statement() if self.match(TokenType.ELSE) else None
+        return IfStmt(condition, if_branch, else_branch)
 
     def block_statement(self) -> BlockStmt:
         statements = []
