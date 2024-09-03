@@ -3,77 +3,68 @@ import sys
 from lox_token import Token
 from token_type import TokenType
 from runtime_exception import RuntimeException
+from parser import Parser
+from scanner import Scanner
+from interpreter import Interpreter
 
 
 class Lox:
-    HAD_PARSER_ERROR = False
-    HAD_RUNTIME_EXCEPTION = False
 
-    @staticmethod
-    def main() -> None:
+    def __init__(self):
+        self.interpreter = Interpreter(self)
+        self.had_parser_error = False
+        self.had_runtime_exception = False
+
+    def main(self) -> None:
         file_name, command_line_args = sys.argv[0], sys.argv[1::]
         if len(command_line_args) > 1:
             print('Usage: plox [script]')
             sys.exit(64)
         elif len(command_line_args) == 1:
-            Lox.run_file(command_line_args[0])
+            self.run_file(command_line_args[0])
         else:
-            Lox.run_prompt()
+            self.run_prompt()
 
-    @staticmethod
-    def run_file(file_path: str) -> None:
+    def run_file(self, file_path: str) -> None:
         with open(file_path, 'r') as file:
             source = file.read()
-        Lox.run(source)
-        if Lox.HAD_PARSER_ERROR:
+        self.run(source)
+        if self.had_parser_error:
             sys.exit(65)
-        elif Lox.HAD_RUNTIME_EXCEPTION:
+        elif self.had_runtime_exception:
             sys.exit(70)
 
-    @staticmethod
-    def run_prompt() -> None:
+    def run_prompt(self) -> None:
         print("> ", end='', flush=True)
         while line := sys.stdin.readline().rstrip():
-            Lox.run(line)
+            self.run(line)
             print("> ", end='', flush=True)
+            self.had_parser_error = False
 
-    @staticmethod
-    def run(source: str) -> None:
-        scanner = Scanner(source)
+    def run(self, source: str) -> None:
+        scanner = Scanner(source, self)
         tokens = scanner.scan_tokens()
-        parser = Parser(tokens)
+        parser = Parser(tokens, self)
         statements = parser.parse()
-        if Lox.HAD_PARSER_ERROR:
+        if self.had_parser_error:
             return
-        Lox.INTERPRETER.interpret(statements)
+        self.interpreter.interpret(statements)
 
-    @staticmethod
-    def report(line_number: int, where: str, message: str):
+    def report(self, line_number: int, where: str, message: str):
         print(f'[line {line_number}] Error {where}: {message}', file=sys.stderr)
-        Lox.HAD_PARSER_ERROR = True
+        self.had_parser_error = True
 
-    @staticmethod
-    def error(line_number: int, where: str = '', message: str = '') -> None:
-        Lox.report(line_number, where, message)
+    def error(self, line_number: int, where: str = '', message: str = '') -> None:
+        self.report(line_number, where, message)
 
-    @staticmethod
-    def error_from_token(token: Token, message: str = ''):
+    def error_from_token(self, token: Token, message: str = ''):
         where = 'at end' if token.type == TokenType.EOF else f"at '{token.lexeme}'"
-        Lox.report(token.line, where, message)
+        self.report(token.line, where, message)
 
-    @staticmethod
-    def runtime_exception(exception: RuntimeException) -> None:
+    def runtime_exception(self, exception: RuntimeException) -> None:
         print(f'{exception}\n[line {exception.token.line}]', file=sys.stderr)
-        Lox.HAD_RUNTIME_EXCEPTION = True
+        self.had_runtime_exception = True
 
-
-# avoid circular imports
-from parser import Parser
-from scanner import Scanner
-from interpreter import Interpreter
-
-# we need to instantiate interpreter here after the interpreter module is imported
-Lox.INTERPRETER = Interpreter()
 
 if __name__ == '__main__':
-    Lox.main()
+    Lox().main()

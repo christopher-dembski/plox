@@ -1,5 +1,6 @@
 import unittest
 
+from lox import Lox
 from lox_token import Token
 from tests.test_helpers.test_case_with_helpers import TestCaseWithHelpers
 from token_type import TokenType
@@ -24,7 +25,7 @@ class TestParser(TestCaseWithHelpers):
             Token(TokenType.SEMICOLON, ';', None, 1),
             Token(TokenType.EOF, '', None, 1)
         ]
-        parsed_statement = Parser(tokens).parse()[0]
+        parsed_statement = Parser(tokens, Lox()).parse()[0]
         expected_statement = ExpressionStmt(
             BinaryExpr(
                 UnaryExpr(

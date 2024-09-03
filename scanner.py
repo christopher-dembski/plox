@@ -24,12 +24,13 @@ class Scanner:
         'while': TokenType.WHILE,
     }
 
-    def __init__(self, source: str):
+    def __init__(self, source: str, lox):
         self.source = source
         self.start = 0
         self.current = 0
         self.line = 1
         self.tokens = []
+        self.lox = lox
 
     def scan_tokens(self) -> Sequence[Token]:
         while not self.is_at_end():
@@ -87,12 +88,12 @@ class Scanner:
                 if Scanner.is_alpha(character):
                     self.identifier()
                 else:
-                    Lox.error(self.line, '', 'Unexpected character.')
+                    self.lox.error(self.line, '', 'Unexpected character.')
 
     def string(self) -> None:
         while self.peek() != '"':
             if self.is_at_end():
-                Lox.error(self.line, '', 'Unterminated string literal.')
+                self.lox.error(self.line, '', 'Unterminated string literal.')
                 return
             if self.peek() == '\n':
                 self.line += 1
@@ -158,6 +159,3 @@ class Scanner:
     @staticmethod
     def is_alpha_numeric(char: str) -> bool:
         return Scanner.is_alpha(char) or Scanner.is_digit(char)
-
-# avoid circular import
-from lox import Lox

@@ -1,5 +1,6 @@
 import unittest
 
+from lox import Lox
 from scanner import Scanner
 from lox_token import Token, TokenType
 from tests.test_helpers.test_case_with_helpers import TestCaseWithHelpers
@@ -12,7 +13,8 @@ class TestScanner(TestCaseWithHelpers):
             'x = 3\n'
             'if (x < 5) {\n'
             ' print "x is less than 5"\n'
-            '}'
+            '}',
+            Lox()
         )
         expected_tokens = [
             Token(TokenType.IDENTIFIER, 'x', None, 1),
@@ -36,7 +38,8 @@ class TestScanner(TestCaseWithHelpers):
         scanner = Scanner(
             '// this is a comment\n'
             '(( )){} // grouping stuff\n'
-            '!*+-/=<> <= == // operators\n'
+            '!*+-/=<> <= == // operators\n',
+            Lox()
         )
         expected_tokens = [
             Token(TokenType.LEFT_PAREN, '(', None, 2),
@@ -60,7 +63,7 @@ class TestScanner(TestCaseWithHelpers):
         self.assertEqual(expected_tokens, scanner.scan_tokens())
 
     def test_scan_tokens_handles_string_literals(self):
-        scanner = Scanner('"hello" != "@world"')
+        scanner = Scanner('"hello" != "@world"', Lox())
         expected_tokens = [
             Token(TokenType.STRING, '"hello"', 'hello', 1),
             Token(TokenType.BANG_EQUAL, '!=', None, 1),
@@ -70,7 +73,7 @@ class TestScanner(TestCaseWithHelpers):
         self.assertEqual(expected_tokens, scanner.scan_tokens())
 
     def test_scan_tokens_handles_number_literals(self):
-        scanner = Scanner('3.14159 < 2.71828')
+        scanner = Scanner('3.14159 < 2.71828', Lox())
         expected_tokens = [
             Token(TokenType.NUMBER, '3.14159', 3.14159, 1),
             Token(TokenType.LESS, '<', None, 1),
@@ -80,7 +83,7 @@ class TestScanner(TestCaseWithHelpers):
         self.assertEqual(expected_tokens, scanner.scan_tokens())
 
     def test_scan_tokens_handles_identifiers(self):
-        scanner = Scanner('orchid5 == pretty_flower')
+        scanner = Scanner('orchid5 == pretty_flower', Lox())
         expected_tokens = [
             Token(TokenType.IDENTIFIER, 'orchid5', None, 1),
             Token(TokenType.EQUAL_EQUAL, '==', None, 1),
@@ -90,7 +93,7 @@ class TestScanner(TestCaseWithHelpers):
         self.assertEqual(expected_tokens, scanner.scan_tokens())
 
     def test_scan_tokens_handles_keywords(self):
-        scanner = Scanner('and')
+        scanner = Scanner('and', Lox())
         expected_tokens = [
             Token(TokenType.AND, 'and', None, 1),
             Token(TokenType.EOF, '', None, 1)

@@ -27,9 +27,10 @@ class Parser:
         TokenType.WHILE
     )
 
-    def __init__(self, tokens: Sequence[Token]):
+    def __init__(self, tokens: Sequence[Token], lox):
         self.tokens = tokens
         self.current = 0
+        self.lox = lox
 
     def parse(self) -> Sequence[Stmt]:
         statements = []
@@ -96,7 +97,7 @@ class Parser:
                 # we know expr is of typeVariableExpr and has a name attribute
                 return AssignmentExpr(expr.name, value)
             equals_token = self.previous()
-            Lox.error_from_token(equals_token, 'Identifier expected.')
+            self.lox.error_from_token(equals_token, 'Identifier expected.')
         return expr
 
     def equality(self) -> Expr:
@@ -147,12 +148,12 @@ class Parser:
             self.consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.")
             return GroupingExpr(expr)
 
-        raise Parser.error(self.peek(), "Expect expression.")
+        raise self.error(self.peek(), "Expect expression.")
 
     def consume(self, token_type: TokenType, message: str) -> Token:
         if self.check(token_type):
             return self.advance()
-        raise Parser.error(self.peek(), message)
+        raise self.error(self.peek(), message)
 
     def match(self, *token_types: TokenType) -> bool:
         for token_type in token_types:
@@ -187,11 +188,6 @@ class Parser:
                 return
             self.advance()
 
-    @staticmethod
-    def error(token: Token, messge: str) -> ParserError:
-        Lox.error_from_token(token, messge)
+    def error(self, token: Token, messge: str) -> ParserError:
+        self.lox.error_from_token(token, messge)
         return ParserError()
-
-
-# avoid circular import
-from lox import Lox

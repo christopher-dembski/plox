@@ -1,6 +1,5 @@
 from typing import Sequence
 
-from lox import Lox
 from token_type import TokenType
 from lox_token import Token
 from expr import ExprVisitor, Expr, LiteralExpr, GroupingExpr, UnaryExpr, BinaryExpr, VariableExpr, AssignmentExpr
@@ -10,14 +9,17 @@ from runtime_exception import RuntimeException
 
 
 class Interpreter(ExprVisitor, StmtVisitor):
-    ENVIRONMENT = Environment()
+
+    def __init__(self, lox):
+        self.lox = lox
+        self.environment = Environment()
 
     def interpret(self, stmts: Sequence[Stmt]) -> None:
         try:
             for stmt in stmts:
                 self.execute(stmt)
         except RuntimeException as exception:
-            Lox.runtime_exception(exception)
+            self.lox.runtime_exception(exception)
 
     def execute(self, stmt: Stmt) -> None:
         stmt.accept(self)
@@ -91,25 +93,25 @@ class Interpreter(ExprVisitor, StmtVisitor):
         print(self.stringify_value(value))
 
     def visit_block_stmt(self, stmt: BlockStmt) -> None:
-        previous_environment = Interpreter.ENVIRONMENT
-        Interpreter.ENVIRONMENT = Environment(previous_environment)
+        previous_environment = self.environment
+        self.environment = Environment(previous_environment)
         try:
             for statement in stmt.statements:
                 statement.accept(self)
         finally:
-            Interpreter.ENVIRONMENT = previous_environment
+            self.environment = previous_environment
 
     def visit_var_stmt(self, stmt: VarStmt) -> None:
         value = self.evaluate(stmt.initializer) if stmt.initializer else None
-        Interpreter.ENVIRONMENT.define(stmt.name.lexeme, value)
+        self.environment.define(stmt.name.lexeme, value)
 
     def visit_assignment_expr(self, expr: AssignmentExpr) -> object:
         value = self.evaluate(expr.value)
-        Interpreter.ENVIRONMENT.assign(expr.name, value)
+        self.environment.assign(expr.name, value)
         return value
 
     def visit_variable_expr(self, expr: VariableExpr) -> object:
-        return Interpreter.ENVIRONMENT.get(expr.name)
+        return self.environment.get(expr.name)
 
     def evaluate(self, expr: Expr | Stmt) -> object:
         return expr.accept(self)
