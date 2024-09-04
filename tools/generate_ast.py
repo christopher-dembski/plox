@@ -12,6 +12,7 @@ def main():
         "Expr",
         [
             "Binary   :: left: Expr, operator: Token, right: Expr",
+            "Logical :: left: Expr, operator: Token, right: Expr",
             "Grouping :: expression: Expr",
             "Literal  :: value: object",
             "Unary    :: operator: Token, right: Expr",

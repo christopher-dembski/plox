@@ -17,6 +17,10 @@ class ExprVisitor(ABC):
         pass
 
     @abstractmethod
+    def visit_logical_expr(self, expr):
+        pass
+
+    @abstractmethod
     def visit_grouping_expr(self, expr):
         pass
 
@@ -54,6 +58,25 @@ class BinaryExpr(Expr):
 
     def __repr__(self):
         return f'BinaryExpr(left={self.left}, operator={self.operator}, right={self.right})'
+
+
+class LogicalExpr(Expr):
+
+    def __init__(self, left: Expr, operator: Token, right: Expr):
+        self.left = left
+        self.operator = operator
+        self.right = right
+
+    def accept(self, visitor: ExprVisitor):
+        return visitor.visit_logical_expr(self)
+
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+        return self.left == other.left and self.operator == other.operator and self.right == other.right
+
+    def __repr__(self):
+        return f'LogicalExpr(left={self.left}, operator={self.operator}, right={self.right})'
 
 
 class GroupingExpr(Expr):

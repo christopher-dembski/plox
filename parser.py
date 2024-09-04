@@ -1,7 +1,7 @@
 from typing import Sequence
 
 from lox_token import Token, TokenType
-from expr import Expr, BinaryExpr, UnaryExpr, LiteralExpr, GroupingExpr, VariableExpr, AssignmentExpr
+from expr import Expr, BinaryExpr, UnaryExpr, LiteralExpr, GroupingExpr, VariableExpr, AssignmentExpr, LogicalExpr
 from stmt import Stmt, PrintStmt, ExpressionStmt, VarStmt, BlockStmt, IfStmt
 
 
@@ -90,7 +90,7 @@ class Parser:
         return ExpressionStmt(value)
 
     def assignment(self) -> Expr:
-        expr = self.equality()
+        expr = self.logical_or()
         if self.match(TokenType.EQUAL):
             value = self.assignment()
             if type(expr) is VariableExpr:
@@ -104,6 +104,18 @@ class Parser:
         expr = self.comparison()
         while self.match(*Parser.EQUALITY_OPERATORS):
             expr = BinaryExpr(left=expr, operator=self.previous(), right=self.comparison())
+        return expr
+
+    def logical_or(self) -> Expr:
+        expr = self.logical_and()
+        while self.match(TokenType.OR):
+            expr = LogicalExpr(left=expr, operator=self.previous(), right=self.logical_and())
+        return expr
+
+    def logical_and(self) -> Expr:
+        expr = self.equality()
+        while self.match(TokenType.AND):
+            expr = LogicalExpr(left=expr, operator=self.previous(), right=self.equality())
         return expr
 
     def comparison(self) -> Expr:

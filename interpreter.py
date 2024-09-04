@@ -2,7 +2,8 @@ from typing import Sequence
 
 from token_type import TokenType
 from lox_token import Token
-from expr import ExprVisitor, Expr, LiteralExpr, GroupingExpr, UnaryExpr, BinaryExpr, VariableExpr, AssignmentExpr
+from expr import ExprVisitor, Expr, LiteralExpr, GroupingExpr, UnaryExpr, BinaryExpr, VariableExpr, AssignmentExpr, \
+    LogicalExpr
 from stmt import StmtVisitor, Stmt, ExpressionStmt, PrintStmt, VarStmt, BlockStmt, IfStmt
 from environment import Environment
 from runtime_exception import RuntimeException
@@ -78,6 +79,14 @@ class Interpreter(ExprVisitor, StmtVisitor):
                 return not Interpreter.is_equal(left_operand, right_operand)
             case _:
                 raise AssertionError('This case should not be reachable. Invalid operator for binary exression.')
+
+    def visit_logical_expr(self, expr: LogicalExpr) -> object:
+        left = self.evaluate(expr.left)
+        if expr.operator.type == TokenType.OR:
+            return left if Interpreter.is_truthy(left) else self.evaluate(expr.right)
+        if expr.operator.type == TokenType.AND:
+            return left if not Interpreter.is_truthy(left) else self.evaluate(expr.right)
+        raise AssertionError('This case should not be reachable. Invalid operator for logical expression.')
 
     def visit_expression_stmt(self, stmt: ExpressionStmt) -> None:
         self.evaluate(stmt.expression)

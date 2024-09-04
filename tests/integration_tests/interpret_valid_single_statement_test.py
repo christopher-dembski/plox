@@ -159,6 +159,33 @@ class TestInterpretValidSingleStatement(TestCaseWithHelpers):
     def test_complex_espression_1(self):
         self.assert_print_expression('!(5 / (-6.0 * 1) >= 0.0)', 'true')
 
+    def test_logical_or_truthy_truthy(self):
+        self.assert_print_expression('"hi" or 2', 'hi')
+
+    def test_logical_or_truthy_falsey(self):
+        self.assert_print_expression('1 or false', '1')
+
+    def test_logical_or_falsey_truthy(self):
+        self.assert_print_expression('nil or true', 'true')
+
+    def test_logical_or_falsey_falsey(self):
+        self.assert_print_expression('false or nil', 'nil')
+
+    def test_logical_and_truthy_truthy(self):
+        self.assert_print_expression('"hi" and 0', '0')
+
+    def test_logical_and_truthy_falsey(self):
+        self.assert_print_expression('0 and false', 'false')
+
+    def test_logical_and_falsey_truthy(self):
+        self.assert_print_expression('nil and true', 'nil')
+
+    def test_logical_and_falsey_falsey(self):
+        self.assert_print_expression('false and nil', 'false')
+
+    def test_complex_logical_expression(self):
+        self.assert_print_expression('true and false or 5 == 5', 'true')
+
 
 if __name__ == '__main__':
     unittest.main()
