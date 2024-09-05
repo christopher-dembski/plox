@@ -25,7 +25,7 @@ class Interpreter(ExprVisitor, StmtVisitor):
     def execute(self, stmt: Stmt) -> None:
         stmt.accept(self)
 
-    def evaluate(self, expr: Expr | Stmt) -> object:
+    def evaluate(self, expr: Expr) -> object:
         return expr.accept(self)
 
     def visit_literal_expr(self, expr: LiteralExpr) -> object:
@@ -96,9 +96,9 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
     def visit_if_stmt(self, stmt: IfStmt) -> None:
         if Interpreter.is_truthy(self.evaluate(stmt.condition)):
-            self.evaluate(stmt.if_branch)
+            self.execute(stmt.if_branch)
         elif stmt.else_branch is not None:
-            self.evaluate(stmt.else_branch)
+            self.execute(stmt.else_branch)
 
     def visit_while_stmt(self, stmt: WhileStmt) -> None:
         while self.is_truthy(self.evaluate(stmt.condition)):
