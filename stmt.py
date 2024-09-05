@@ -34,6 +34,10 @@ class StmtVisitor(ABC):
     def visit_if_stmt(self, stmt):
         pass
 
+    @abstractmethod
+    def visit_while_stmt(self, stmt):
+        pass
+
 
 class ExpressionStmt(Stmt):
 
@@ -121,3 +125,21 @@ class IfStmt(Stmt):
 
     def __repr__(self):
         return f'IfStmt(condition={self.condition}, if_branch={self.if_branch}, else_branch={self.else_branch})'
+
+
+class WhileStmt(Stmt):
+
+    def __init__(self, condition: Expr, body: Stmt):
+        self.condition = condition
+        self.body = body
+
+    def accept(self, visitor: StmtVisitor):
+        return visitor.visit_while_stmt(self)
+
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+        return self.condition == other.condition and self.body == other.body
+
+    def __repr__(self):
+        return f'WhileStmt(condition={self.condition}, body={self.body})'

@@ -36,6 +36,14 @@ class TestDeclarationAndAssignment(TestCaseWithHelpers):
                  '}'
         self.assert_prints(source, 'executed if')
 
+    def test_while(self):
+        source = 'var x = 0;' \
+                 'while (x < 5) {' \
+                 '  print x;' \
+                 '  x = x + 1;' \
+                 '}'
+        self.assert_prints(source, ['0', '1', '2', '3', '4'])
+
 
 if __name__ == '__main__':
     unittest.main()

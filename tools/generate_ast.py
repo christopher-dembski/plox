@@ -27,7 +27,8 @@ def main():
             "Var :: name: Token, initializer: Expr",
             "Print   :: expression: Expr",
             "Block :: statements: Iterable[Stmt]",
-            "If :: condition: Expr, if_branch: Stmt, else_branch: Stmt"
+            "If :: condition: Expr, if_branch: Stmt, else_branch: Stmt",
+            "While :: condition: Expr, body: Stmt"
         ]
     )
 

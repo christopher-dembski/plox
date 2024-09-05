@@ -2,7 +2,7 @@ from typing import Sequence
 
 from lox_token import Token, TokenType
 from expr import Expr, BinaryExpr, UnaryExpr, LiteralExpr, GroupingExpr, VariableExpr, AssignmentExpr, LogicalExpr
-from stmt import Stmt, PrintStmt, ExpressionStmt, VarStmt, BlockStmt, IfStmt
+from stmt import Stmt, PrintStmt, ExpressionStmt, VarStmt, BlockStmt, IfStmt, WhileStmt
 
 
 class ParserError(Exception):
@@ -52,6 +52,8 @@ class Parser:
     def statement(self) -> Stmt:
         if self.match(TokenType.IF):
             return self.if_statement()
+        if self.match(TokenType.WHILE):
+            return self.while_statement()
         if self.match(TokenType.PRINT):
             return self.print_statement()
         if self.match(TokenType.LEFT_BRACE):
@@ -66,10 +68,18 @@ class Parser:
     def if_statement(self) -> IfStmt:
         self.consume(TokenType.LEFT_PAREN, "Expect '(' atfer if.")
         condition = self.expression()
-        self.consume(TokenType.RIGHT_PAREN, "Expect ')' after condition if statement condition.")
+        self.consume(TokenType.RIGHT_PAREN, "Expect ')' after if statement condition.")
         if_branch = self.statement()
         else_branch = self.statement() if self.match(TokenType.ELSE) else None
         return IfStmt(condition, if_branch, else_branch)
+
+    def while_statement(self) -> WhileStmt:
+        self.consume(TokenType.LEFT_PAREN, "Expect '(' before while statement condition.")
+        condition = self.expression()
+        self.consume(TokenType.RIGHT_PAREN, "Expect ')' after while statement condition.")
+        body = self.statement()
+        return WhileStmt(condition, body)
+
 
     def block_statement(self) -> BlockStmt:
         statements = []

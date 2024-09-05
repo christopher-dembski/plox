@@ -4,7 +4,7 @@ from token_type import TokenType
 from lox_token import Token
 from expr import ExprVisitor, Expr, LiteralExpr, GroupingExpr, UnaryExpr, BinaryExpr, VariableExpr, AssignmentExpr, \
     LogicalExpr
-from stmt import StmtVisitor, Stmt, ExpressionStmt, PrintStmt, VarStmt, BlockStmt, IfStmt
+from stmt import StmtVisitor, Stmt, ExpressionStmt, PrintStmt, VarStmt, BlockStmt, IfStmt, WhileStmt
 from environment import Environment
 from runtime_exception import RuntimeException
 
@@ -24,6 +24,9 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
     def execute(self, stmt: Stmt) -> None:
         stmt.accept(self)
+
+    def evaluate(self, expr: Expr | Stmt) -> object:
+        return expr.accept(self)
 
     def visit_literal_expr(self, expr: LiteralExpr) -> object:
         return expr.value
@@ -97,6 +100,10 @@ class Interpreter(ExprVisitor, StmtVisitor):
         elif stmt.else_branch is not None:
             self.evaluate(stmt.else_branch)
 
+    def visit_while_stmt(self, stmt: WhileStmt) -> None:
+        while self.is_truthy(self.evaluate(stmt.condition)):
+            self.execute(stmt.body)
+
     def visit_print_stmt(self, stmt: PrintStmt) -> None:
         value = self.evaluate(stmt.expression)
         print(self.stringify_value(value))
@@ -121,9 +128,6 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
     def visit_variable_expr(self, expr: VariableExpr) -> object:
         return self.environment.get(expr.name)
-
-    def evaluate(self, expr: Expr | Stmt) -> object:
-        return expr.accept(self)
 
     @staticmethod
     def is_truthy(value: object) -> bool:
