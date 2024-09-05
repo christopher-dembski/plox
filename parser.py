@@ -54,6 +54,8 @@ class Parser:
             return self.if_statement()
         if self.match(TokenType.WHILE):
             return self.while_statement()
+        if self.match(TokenType.FOR):
+            return self.for_statement()
         if self.match(TokenType.PRINT):
             return self.print_statement()
         if self.match(TokenType.LEFT_BRACE):
@@ -80,6 +82,28 @@ class Parser:
         body = self.statement()
         return WhileStmt(condition, body)
 
+    def for_statement(self) -> WhileStmt:
+        self.consume(TokenType.LEFT_PAREN, "Expect '(' after for keyword.")
+        initializer = None if self.match(TokenType.SEMICOLON) \
+            else self.var_declaration() if self.match(TokenType.VAR) \
+            else self.expression_statement()
+        condition = None if self.check(TokenType.SEMICOLON) else self.expression()
+        self.consume(TokenType.SEMICOLON, "Expect ';' after for loop condition.")
+        increment = None if self.check(TokenType.RIGHT_PAREN) else self.expression()
+        self.consume(TokenType.RIGHT_PAREN, "Expect ')' after for clauses.")
+        body = self.statement()
+        return Parser.desuagar_for_statement(initializer, condition, increment, body)
+
+    @staticmethod
+    def desuagar_for_statement(initializer: VarStmt | ExpressionStmt, condition: Expr, increment: Expr, body: Stmt) -> WhileStmt:
+        if increment is not None:
+            body = BlockStmt((body, ExpressionStmt(increment)))
+        if condition is None:
+            condition = LiteralExpr(True)
+        body = WhileStmt(condition, body)
+        if initializer is not None:
+            body = BlockStmt((initializer, body))
+        return body
 
     def block_statement(self) -> BlockStmt:
         statements = []
@@ -88,7 +112,7 @@ class Parser:
         self.consume(TokenType.RIGHT_BRACE, "Expect '}' after block.")
         return BlockStmt(statements)
 
-    def var_declaration(self) -> Stmt:
+    def var_declaration(self) -> VarStmt:
         name = self.consume(TokenType.IDENTIFIER, "Expected identifier after var.")
         initializer = self.expression() if self.match(TokenType.EQUAL) else None
         self.consume(TokenType.SEMICOLON, "Expect ';' after declaration.")

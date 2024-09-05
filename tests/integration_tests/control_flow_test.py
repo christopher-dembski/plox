@@ -44,6 +44,50 @@ class TestDeclarationAndAssignment(TestCaseWithHelpers):
                  '}'
         self.assert_prints(source, ['0', '1', '2', '3', '4'])
 
+    def test_for(self):
+        source = 'var a = 0;' \
+                 'var temp;' \
+                 'for (var b = 1; a < 10; b = temp + b) {' \
+                 '  print a;' \
+                 '  temp = a;' \
+                 '  a = b;' \
+                 '}'
+        self.assert_prints(source, ['0', '1', '1', '2', '3', '5', '8'])
+
+    def test_for_no_intitializer(self):
+        source = 'var i = 0;' \
+                 'for (; i < 3; i = i +1)' \
+                 '  print i;'
+        self.assert_prints(source, ['0', '1', '2'])
+
+    def test_for_no_condition(self):
+        source = 'var i = 0;' \
+                 'for (; i < 5;)' \
+                 '  i = i + 1;' \
+                 'print i;'
+        self.assert_prints(source, '5')
+
+    def test_for_expression_statament_as_initializer(self):
+        source = 'var i;' \
+                 'for (i = 0; i < 3; i = i + 1)' \
+                 '  print i;'
+        self.assert_prints(source, ['0', '1', '2'])
+
+    def test_for_no_left_paren_after_for_keyword(self):
+        source = 'for var i = 0; i < 3; i = i + 1)' \
+                 'print i;'
+        self.assert_prints_to_std_err(source)
+
+    def test_for_no_semicolon_after_condition(self):
+        source = 'for (var i = 0; i < 3 i = i + 1)' \
+                 'print i;'
+        self.assert_prints_to_std_err(source)
+
+    def test_for_no_right_paren_after_increment(self):
+        source = 'for (var i = 0; i < 3; i = i + 1' \
+                 'print i;'
+        self.assert_prints_to_std_err(source)
+
 
 if __name__ == '__main__':
     unittest.main()
