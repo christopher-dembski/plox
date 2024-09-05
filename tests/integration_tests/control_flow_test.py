@@ -37,12 +37,31 @@ class TestDeclarationAndAssignment(TestCaseWithHelpers):
         self.assert_prints(source, 'executed if')
 
     def test_while(self):
-        source = 'var x = 0;' \
-                 'while (x < 5) {' \
-                 '  print x;' \
-                 '  x = x + 1;' \
+        source = 'var i = 0;' \
+                 'while (i < 5) {' \
+                 '  print i;' \
+                 '  i = i + 1;' \
                  '}'
         self.assert_prints(source, ['0', '1', '2', '3', '4'])
+
+    def test_while_single_non_block_statement(self):
+        source = 'var i = 0;' \
+                 'while (i < 5)' \
+                 '  i = i + 1;' \
+                 'print i;'
+        self.assert_prints(source, '5')
+
+    def test_while_no_left_paren_before_condition(self):
+        source = 'var i = 0;' \
+                 'while i < 3)' \
+                 'i = i + 1;'
+        self.assert_prints_to_std_err(source)
+
+    def test_while_no_right_paren_after_condition(self):
+        source = 'var i = 0;' \
+                 'while (i < 3' \
+                 'i = i + 1;'
+        self.assert_prints_to_std_err(source)
 
     def test_for(self):
         source = 'var a = 0;' \
