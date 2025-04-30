@@ -1,8 +1,9 @@
 from typing import Sequence
 
 from lox_token import Token, TokenType
-from expr import Expr, BinaryExpr, UnaryExpr, LiteralExpr, GroupingExpr, VariableExpr, AssignmentExpr, LogicalExpr
-from stmt import Stmt, PrintStmt, ExpressionStmt, VarStmt, BlockStmt, IfStmt, WhileStmt
+from expr import Expr, BinaryExpr, UnaryExpr, LiteralExpr, GroupingExpr, VariableExpr, AssignmentExpr, LogicalExpr, \
+    CallExpr
+from stmt import Stmt, PrintStmt, ExpressionStmt, VarStmt, BlockStmt, IfStmt, WhileStmt, FunctionStmt
 
 
 class ParserError(Exception):
@@ -10,6 +11,8 @@ class ParserError(Exception):
 
 
 class Parser:
+    MAX_ARGUMENTS = 255
+
     EQUALITY_OPERATORS = (TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL)
     COMPARISON_OPERATORS = (TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL)
     TERM_OPERATORS = (TokenType.PLUS, TokenType.MINUS)
@@ -43,6 +46,8 @@ class Parser:
 
     def declaration(self) -> Stmt:
         try:
+            if self.match(TokenType.FUN):
+                return self.function_declaration("function")
             if self.match(TokenType.VAR):
                 return self.var_declaration()
             return self.statement()
@@ -95,7 +100,8 @@ class Parser:
         return Parser.desuagar_for_statement(initializer, condition, increment, body)
 
     @staticmethod
-    def desuagar_for_statement(initializer: VarStmt | ExpressionStmt, condition: Expr, increment: Expr, body: Stmt) -> WhileStmt:
+    def desuagar_for_statement(initializer: VarStmt | ExpressionStmt, condition: Expr, increment: Expr,
+                               body: Stmt) -> WhileStmt:
         if increment is not None:
             body = BlockStmt((body, ExpressionStmt(increment)))
         if condition is None:
@@ -117,6 +123,22 @@ class Parser:
         initializer = self.expression() if self.match(TokenType.EQUAL) else None
         self.consume(TokenType.SEMICOLON, "Expect ';' after declaration.")
         return VarStmt(name, initializer)
+
+    def function_declaration(self, kind: str) -> FunctionStmt:
+        name = self.consume(TokenType.IDENTIFIER, f"Expect {kind} name.")
+        self.consume(TokenType.LEFT_PAREN, f"Expect '(' after {kind} name.")
+        parameters = []
+        if not self.check(TokenType.RIGHT_PAREN):
+            first_iteration = True
+            while first_iteration or self.match(TokenType.COMMA):
+                first_iteration = False
+                if len(parameters) >= Parser.MAX_ARGUMENTS:
+                    self.error(self.peek(), f"Can't have more than {Parser.MAX_ARGUMENTS} parameters.")
+                parameters.append(self.consume(TokenType.IDENTIFIER, "Expect parameter name."))
+        self.consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.")
+        self.consume(TokenType.LEFT_BRACE, f"Expect '{{' befoe {kind} body.")
+        body = self.block_statement()
+        return FunctionStmt(name, parameters, body)
 
     def expression_statement(self) -> ExpressionStmt:
         value = self.expression()
@@ -173,7 +195,29 @@ class Parser:
     def unary(self) -> Expr:
         if self.match(*Parser.UNARY_OPERATORS):
             return UnaryExpr(operator=self.previous(), right=self.unary())
-        return self.primary()
+        return self.call()
+
+    def call(self) -> Expr:
+        expr = self.primary()
+        while self.match(TokenType.LEFT_PAREN):
+            expr = self.finish_call(expr)
+        return expr
+
+    def finish_call(self, callee: Expr) -> Expr:
+        arguments = []
+        if not self.check(TokenType.RIGHT_PAREN):
+            while True:
+                if len(arguments) >= Parser.MAX_ARGUMENTS:
+                    self.error(
+                        self.peek(),
+                        f"Exceeded maximum number of arguments for function call. "
+                        f"The maximum number of arguments is {Parser.MAX_ARGUMENTS}."
+                    )
+                arguments.append(self.expression())
+                if not self.match(TokenType.COMMA):
+                    break
+        paren = self.consume(TokenType.RIGHT_PAREN, "Expect ')' after argument list.")
+        return CallExpr(callee, paren, arguments)
 
     def primary(self) -> Expr:
         if self.match(TokenType.NUMBER, TokenType.STRING):

@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Iterable
+from typing import Sequence
 
 from lox_token import Token
 from expr import Expr
@@ -28,6 +29,10 @@ class StmtVisitor(ABC):
 
     @abstractmethod
     def visit_block_stmt(self, stmt):
+        pass
+
+    @abstractmethod
+    def visit_function_stmt(self, stmt):
         pass
 
     @abstractmethod
@@ -106,6 +111,25 @@ class BlockStmt(Stmt):
 
     def __repr__(self):
         return f'BlockStmt(statements={self.statements})'
+
+
+class FunctionStmt(Stmt):
+
+    def __init__(self, name: Token, params: Sequence[Token], body: BlockStmt):
+        self.name = name
+        self.params = params
+        self.body = body
+
+    def accept(self, visitor: StmtVisitor):
+        return visitor.visit_function_stmt(self)
+
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+        return self.name == other.name and self.params == other.params and self.body == other.body
+
+    def __repr__(self):
+        return f'FunctionStmt(name={self.name}, params={self.params}, body={self.body})'
 
 
 class IfStmt(Stmt):

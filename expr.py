@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Iterable
 
 from lox_token import Token
 
@@ -38,6 +39,10 @@ class ExprVisitor(ABC):
 
     @abstractmethod
     def visit_assignment_expr(self, expr):
+        pass
+
+    @abstractmethod
+    def visit_call_expr(self, expr):
         pass
 
 
@@ -164,3 +169,22 @@ class AssignmentExpr(Expr):
 
     def __repr__(self):
         return f'AssignmentExpr(name={self.name}, value={self.value})'
+
+
+class CallExpr(Expr):
+
+    def __init__(self, callee: Expr, paren: Token, arguments: Iterable[Expr]):
+        self.callee = callee
+        self.paren = paren
+        self.arguments = arguments
+
+    def accept(self, visitor: ExprVisitor):
+        return visitor.visit_call_expr(self)
+
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+        return self.callee == other.callee and self.paren == other.paren and self.arguments == other.arguments
+
+    def __repr__(self):
+        return f'CallExpr(callee={self.callee}, paren={self.paren}, arguments={self.arguments})'

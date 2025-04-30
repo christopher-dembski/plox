@@ -17,7 +17,8 @@ def main():
             "Literal  :: value: object",
             "Unary    :: operator: Token, right: Expr",
             "Variable :: name: Token",
-            "Assignment :: name: Token, value: Expr"
+            "Assignment :: name: Token, value: Expr",
+            "Call :: callee: Expr, paren: Token, arguments: Iterable[Expr]"
         ]
     )
     define_ast(
@@ -27,6 +28,7 @@ def main():
             "Var :: name: Token, initializer: Expr",
             "Print   :: expression: Expr",
             "Block :: statements: Iterable[Stmt]",
+            "Function :: name: Token, params: Sequence[Token], body: BlockStmt",
             "If :: condition: Expr, if_branch: Stmt, else_branch: Stmt",
             "While :: condition: Expr, body: Stmt"
         ]
@@ -40,6 +42,8 @@ def define_ast(base_name: str, types: List[str]):
         file.write('from abc import ABC, abstractmethod\n')
         if any(type_string.count('Iterable') for type_string in types):
             file.write('from typing import Iterable\n')
+        if any(type_string.count('Sequence') for type_string in types):
+            file.write('from typing import Sequence\n')
         file.write('\n')
         if any(type_string.count('Token') for type_string in types):
             file.write('from lox_token import Token\n')

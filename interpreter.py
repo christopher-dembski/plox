@@ -1,9 +1,12 @@
 from typing import Sequence
 
+from LoxFunction import LoxFunction
+from foreign_functions.clock import Clock
+from lox_callable import LoxCallable
 from token_type import TokenType
 from lox_token import Token
 from expr import ExprVisitor, Expr, LiteralExpr, GroupingExpr, UnaryExpr, BinaryExpr, VariableExpr, AssignmentExpr, \
-    LogicalExpr
+    LogicalExpr, CallExpr
 from stmt import StmtVisitor, Stmt, ExpressionStmt, PrintStmt, VarStmt, BlockStmt, IfStmt, WhileStmt
 from environment import Environment
 from runtime_exception import RuntimeException
@@ -13,7 +16,9 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
     def __init__(self, lox):
         self.lox = lox
-        self.environment = Environment()
+        self.globals = Environment()
+        self.environment = self.globals
+        self.globals.define("clock", Clock())
 
     def interpret(self, stmts: Sequence[Stmt]) -> None:
         try:
@@ -24,6 +29,16 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
     def execute(self, stmt: Stmt) -> None:
         stmt.accept(self)
+
+    def execute_block(self, block_statement: BlockStmt, environment: Environment) -> None:
+        previous = self.environment
+        self.environment = environment
+        try:
+            self.environment = environment
+            for stmt in block_statement.statements:
+                self.execute(stmt)
+        finally:
+            self.environment = previous
 
     def evaluate(self, expr: Expr) -> object:
         return expr.accept(self)
@@ -45,6 +60,19 @@ class Interpreter(ExprVisitor, StmtVisitor):
                 return not Interpreter.is_truthy(operand)
             case _:
                 raise AssertionError('This case should not be reachable. Invalid operator for unary expression.')
+
+    def visit_call_expr(self, expr: CallExpr) -> object:
+        callee = self.evaluate(expr.callee)
+        arguments = tuple(self.evaluate(argument) for argument in expr.arguments)
+        if not isinstance(callee, LoxCallable):
+            raise RuntimeException(expr.paren, "Object is not callable.")
+        if len(arguments) != callee.arity():
+            raise RuntimeException(
+                expr.paren,
+                f"Wrong number of arguments provided. "
+                f"Received {len(arguments)} but expected {callee.arity()}."
+            )
+        return callee.call(self, arguments)
 
     def visit_binary_expr(self, expr: BinaryExpr) -> object:
         operator = expr.operator
@@ -93,6 +121,10 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
     def visit_expression_stmt(self, stmt: ExpressionStmt) -> None:
         self.evaluate(stmt.expression)
+
+    def visit_function_stmt(self, stmt) -> None:
+        function = LoxFunction(stmt)
+        self.environment.define(stmt.name.lexeme, function)
 
     def visit_if_stmt(self, stmt: IfStmt) -> None:
         if Interpreter.is_truthy(self.evaluate(stmt.condition)):
@@ -162,10 +194,9 @@ class Interpreter(ExprVisitor, StmtVisitor):
             if float_string.endswith('.0'):
                 return float_string[:-2]
             return float_string
-        elif type(value) is str:
-            # calling str on value to silence type warning
-            return str(value)
         elif type(value) is bool:
             return 'true' if value else 'false'
         elif value is None:
             return 'nil'
+        else:  # str or object
+            return str(value)
