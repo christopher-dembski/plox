@@ -1,14 +1,16 @@
 from typing import Sequence
 
-from LoxFunction import LoxFunction
+from lox_function import LoxFunction
 from foreign_functions.clock import Clock
 from lox_callable import LoxCallable
+from lox_return import Return
 from token_type import TokenType
 from lox_token import Token
 from expr import ExprVisitor, Expr, LiteralExpr, GroupingExpr, UnaryExpr, BinaryExpr, VariableExpr, AssignmentExpr, \
     LogicalExpr, CallExpr
 from stmt import StmtVisitor, Stmt, ExpressionStmt, PrintStmt, VarStmt, BlockStmt, IfStmt, WhileStmt
 from environment import Environment
+
 from runtime_exception import RuntimeException
 
 
@@ -139,6 +141,10 @@ class Interpreter(ExprVisitor, StmtVisitor):
     def visit_print_stmt(self, stmt: PrintStmt) -> None:
         value = self.evaluate(stmt.expression)
         print(self.stringify_value(value))
+
+    def visit_return_stmt(self, stmt) -> None:
+        value = self.evaluate(stmt.value) if stmt.value is not None else None
+        raise Return(value)
 
     def visit_block_stmt(self, stmt: BlockStmt) -> None:
         previous_environment = self.environment

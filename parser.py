@@ -3,7 +3,7 @@ from typing import Sequence
 from lox_token import Token, TokenType
 from expr import Expr, BinaryExpr, UnaryExpr, LiteralExpr, GroupingExpr, VariableExpr, AssignmentExpr, LogicalExpr, \
     CallExpr
-from stmt import Stmt, PrintStmt, ExpressionStmt, VarStmt, BlockStmt, IfStmt, WhileStmt, FunctionStmt
+from stmt import Stmt, PrintStmt, ExpressionStmt, VarStmt, BlockStmt, IfStmt, WhileStmt, FunctionStmt, ReturnStmt
 
 
 class ParserError(Exception):
@@ -63,6 +63,8 @@ class Parser:
             return self.for_statement()
         if self.match(TokenType.PRINT):
             return self.print_statement()
+        if self.match(TokenType.RETURN):
+            return self.return_statement()
         if self.match(TokenType.LEFT_BRACE):
             return self.block_statement()
         return self.expression_statement()
@@ -71,6 +73,12 @@ class Parser:
         value = self.expression()
         self.consume(TokenType.SEMICOLON, "Expect ';' after value.")
         return PrintStmt(value)
+
+    def return_statement(self) -> ReturnStmt:
+        keyword = self.previous()
+        value = None if self.check(TokenType.SEMICOLON) else self.expression()
+        self.consume(TokenType.SEMICOLON, "Expect ';' after value.")
+        return ReturnStmt(keyword, value)
 
     def if_statement(self) -> IfStmt:
         self.consume(TokenType.LEFT_PAREN, "Expect '(' atfer if.")

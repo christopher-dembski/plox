@@ -18,3 +18,23 @@ class TestDeclarationAndAssignment(TestCaseWithHelpers):
                  '}' \
                  'say_hi("Dear", "Reader");'
         self.assert_prints(source, "Hi, Dear Reader!")
+
+    def test_return(self):
+        source = 'fun fib(n) {' \
+                 '  if (n <= 1) return n;' \
+                 '  return fib(n - 2) + fib(n - 1);' \
+                 '}' \
+                 'for (var i = 0; i < 7; i = i + 1) {' \
+                 '  print fib(i);' \
+                 '}'
+        fibonacci_sequence = (0, 1, 1, 2, 3, 5, 8)
+        self.assert_prints(source, '\n'.join(map(str, fibonacci_sequence)))
+
+    def test_return_no_value(self):
+        source = 'fun print_a() {' \
+                 '  print "a";' \
+                 '  return;' \
+                 '  print "b";' \
+                 '}' \
+                 'print_a();'
+        self.assert_prints(source, "a")

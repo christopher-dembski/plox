@@ -28,6 +28,10 @@ class StmtVisitor(ABC):
         pass
 
     @abstractmethod
+    def visit_return_stmt(self, stmt):
+        pass
+
+    @abstractmethod
     def visit_block_stmt(self, stmt):
         pass
 
@@ -94,6 +98,24 @@ class PrintStmt(Stmt):
 
     def __repr__(self):
         return f'PrintStmt(expression={self.expression})'
+
+
+class ReturnStmt(Stmt):
+
+    def __init__(self, keyword: Token, value: Expr):
+        self.keyword = keyword
+        self.value = value
+
+    def accept(self, visitor: StmtVisitor):
+        return visitor.visit_return_stmt(self)
+
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+        return self.keyword == other.keyword and self.value == other.value
+
+    def __repr__(self):
+        return f'ReturnStmt(keyword={self.keyword}, value={self.value})'
 
 
 class BlockStmt(Stmt):

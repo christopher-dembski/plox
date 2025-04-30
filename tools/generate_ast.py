@@ -27,6 +27,7 @@ def main():
             "Expression   :: expression: Expr",
             "Var :: name: Token, initializer: Expr",
             "Print   :: expression: Expr",
+            "Return :: keyword: Token, value: Expr",
             "Block :: statements: Iterable[Stmt]",
             "Function :: name: Token, params: Sequence[Token], body: BlockStmt",
             "If :: condition: Expr, if_branch: Stmt, else_branch: Stmt",
