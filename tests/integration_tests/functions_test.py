@@ -28,7 +28,7 @@ class TestDeclarationAndAssignment(TestCaseWithHelpers):
                  '  print fib(i);' \
                  '}'
         fibonacci_sequence = (0, 1, 1, 2, 3, 5, 8)
-        self.assert_prints(source, '\n'.join(map(str, fibonacci_sequence)))
+        self.assert_prints(source, [str(n) for n in fibonacci_sequence])
 
     def test_return_no_value(self):
         source = 'fun print_a() {' \
@@ -38,3 +38,17 @@ class TestDeclarationAndAssignment(TestCaseWithHelpers):
                  '}' \
                  'print_a();'
         self.assert_prints(source, "a")
+
+    def test_losure(self):
+        source = 'fun make_counter() {' \
+                 '  var i = 0;' \
+                 '  fun count() {' \
+                 '    i = i + 1;' \
+                 '    print i;' \
+                 '  }' \
+                 '  return count;' \
+                 '}' \
+                 'var counter = make_counter();' \
+                 'counter();' \
+                 'counter();'
+        self.assert_prints(source, ['1', '2'])

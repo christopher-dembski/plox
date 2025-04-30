@@ -7,11 +7,12 @@ from stmt import FunctionStmt
 
 
 class LoxFunction(LoxCallable):
-    def __init__(self, declaration: FunctionStmt):
+    def __init__(self, declaration: FunctionStmt, closure: Environment):
         self.declaration = declaration
+        self.closure = closure
 
     def call(self, interpreter, arguments: Sequence[object]) -> object:
-        environment = Environment(interpreter.globals)
+        environment = Environment(self.closure)
         for param, arg in zip(self.declaration.params, arguments):
             environment.define(param.lexeme, arg)
         try:
