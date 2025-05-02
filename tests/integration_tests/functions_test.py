@@ -12,6 +12,13 @@ class TestDeclarationAndAssignment(TestCaseWithHelpers):
     def test_print_foreign_function(self):
         self.assert_prints('print clock;', '<foreign fn: clock>')
 
+    def test_function_call_2(self):
+        source = 'fun f(name) {' \
+                 '  print name;' \
+                 '}' \
+                 'f("Hi");'
+        self.assert_prints(source, "Hi")
+
     def test_function_call(self):
         source = 'fun say_hi(first, last) {' \
                  '  print "Hi, " + first + " " + last + "!" ;' \
@@ -39,7 +46,7 @@ class TestDeclarationAndAssignment(TestCaseWithHelpers):
                  'print_a();'
         self.assert_prints(source, "a")
 
-    def test_losure(self):
+    def test_closure(self):
         source = 'fun make_counter() {' \
                  '  var i = 0;' \
                  '  fun count() {' \

@@ -99,6 +99,9 @@ def define_type(file: TextIO, base_name: str, name: str, fields: str):
     # this is not very readable... but it is cool that you can have nested fstrings
     file.write(f'        return {" and ".join(f"self.{name} == other.{name}" for name in field_names)}')
     file.write('\n\n')
+    # __hash__ method
+    file.write('    def __hash__(self):\n')
+    file.write('        return id(self)\n\n')
     # __repr__ method
     file.write('    def __repr__(self):\n')
     string_representation = f'{name}{base_name}({", ".join(f"{name}={{self.{name}}}" for name in field_names)})'

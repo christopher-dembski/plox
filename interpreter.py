@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, Dict
 
 from lox_function import LoxFunction
 from foreign_functions.clock import Clock
@@ -21,6 +21,7 @@ class Interpreter(ExprVisitor, StmtVisitor):
         self.globals = Environment()
         self.environment = self.globals
         self.globals.define("clock", Clock())
+        self.locals: Dict[Expr, int] = {}
 
     def interpret(self, stmts: Sequence[Stmt]) -> None:
         try:
@@ -41,6 +42,9 @@ class Interpreter(ExprVisitor, StmtVisitor):
                 self.execute(stmt)
         finally:
             self.environment = previous
+
+    def resolve(self, expr: Expr, depth: int):
+        self.locals[expr] = depth
 
     def evaluate(self, expr: Expr) -> object:
         return expr.accept(self)
@@ -161,11 +165,22 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
     def visit_assignment_expr(self, expr: AssignmentExpr) -> object:
         value = self.evaluate(expr.value)
-        self.environment.assign(expr.name, value)
+        distance = self.locals.get(expr, None)
+        if distance is not None:
+            self.environment.assign_at(distance, expr.name, value)
+        else:
+            self.globals.assign(expr.name, value)
         return value
 
     def visit_variable_expr(self, expr: VariableExpr) -> object:
-        return self.environment.get(expr.name)
+        return self.lookup_variable(expr.name, expr)
+
+    def lookup_variable(self, name: Token, expr: Expr):
+        distance = self.locals.get(expr, None)
+        if distance is not None:
+            return self.environment.get_at(distance, name.lexeme)
+        else:
+            return self.globals.get(name)
 
     @staticmethod
     def is_truthy(value: object) -> bool:

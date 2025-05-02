@@ -1,6 +1,7 @@
 import sys
 
 from lox_token import Token
+from resolver import Resolver
 from token_type import TokenType
 from runtime_exception import RuntimeException
 from parser import Parser
@@ -46,6 +47,10 @@ class Lox:
         tokens = scanner.scan_tokens()
         parser = Parser(tokens, self)
         statements = parser.parse()
+        if self.had_parser_error:
+            return
+        resolver = Resolver(self.interpreter)
+        resolver.resolve_stmts(statements)
         if self.had_parser_error:
             return
         self.interpreter.interpret(statements)

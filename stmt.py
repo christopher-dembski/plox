@@ -61,6 +61,9 @@ class ExpressionStmt(Stmt):
             return False
         return self.expression == other.expression
 
+    def __hash__(self):
+        return id(self)
+
     def __repr__(self):
         return f'ExpressionStmt(expression={self.expression})'
 
@@ -79,6 +82,9 @@ class VarStmt(Stmt):
             return False
         return self.name == other.name and self.initializer == other.initializer
 
+    def __hash__(self):
+        return id(self)
+
     def __repr__(self):
         return f'VarStmt(name={self.name}, initializer={self.initializer})'
 
@@ -95,6 +101,9 @@ class PrintStmt(Stmt):
         if type(self) != type(other):
             return False
         return self.expression == other.expression
+
+    def __hash__(self):
+        return id(self)
 
     def __repr__(self):
         return f'PrintStmt(expression={self.expression})'
@@ -114,6 +123,9 @@ class ReturnStmt(Stmt):
             return False
         return self.keyword == other.keyword and self.value == other.value
 
+    def __hash__(self):
+        return id(self)
+
     def __repr__(self):
         return f'ReturnStmt(keyword={self.keyword}, value={self.value})'
 
@@ -130,6 +142,9 @@ class BlockStmt(Stmt):
         if type(self) != type(other):
             return False
         return self.statements == other.statements
+
+    def __hash__(self):
+        return id(self)
 
     def __repr__(self):
         return f'BlockStmt(statements={self.statements})'
@@ -150,6 +165,9 @@ class FunctionStmt(Stmt):
             return False
         return self.name == other.name and self.params == other.params and self.body == other.body
 
+    def __hash__(self):
+        return id(self)
+
     def __repr__(self):
         return f'FunctionStmt(name={self.name}, params={self.params}, body={self.body})'
 
@@ -169,6 +187,9 @@ class IfStmt(Stmt):
             return False
         return self.condition == other.condition and self.if_branch == other.if_branch and self.else_branch == other.else_branch
 
+    def __hash__(self):
+        return id(self)
+
     def __repr__(self):
         return f'IfStmt(condition={self.condition}, if_branch={self.if_branch}, else_branch={self.else_branch})'
 
@@ -186,6 +207,9 @@ class WhileStmt(Stmt):
         if type(self) != type(other):
             return False
         return self.condition == other.condition and self.body == other.body
+
+    def __hash__(self):
+        return id(self)
 
     def __repr__(self):
         return f'WhileStmt(condition={self.condition}, body={self.body})'

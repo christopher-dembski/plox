@@ -61,6 +61,9 @@ class BinaryExpr(Expr):
             return False
         return self.left == other.left and self.operator == other.operator and self.right == other.right
 
+    def __hash__(self):
+        return id(self)
+
     def __repr__(self):
         return f'BinaryExpr(left={self.left}, operator={self.operator}, right={self.right})'
 
@@ -80,6 +83,9 @@ class LogicalExpr(Expr):
             return False
         return self.left == other.left and self.operator == other.operator and self.right == other.right
 
+    def __hash__(self):
+        return id(self)
+
     def __repr__(self):
         return f'LogicalExpr(left={self.left}, operator={self.operator}, right={self.right})'
 
@@ -97,6 +103,9 @@ class GroupingExpr(Expr):
             return False
         return self.expression == other.expression
 
+    def __hash__(self):
+        return id(self)
+
     def __repr__(self):
         return f'GroupingExpr(expression={self.expression})'
 
@@ -113,6 +122,9 @@ class LiteralExpr(Expr):
         if type(self) != type(other):
             return False
         return self.value == other.value
+
+    def __hash__(self):
+        return id(self)
 
     def __repr__(self):
         return f'LiteralExpr(value={self.value})'
@@ -132,6 +144,9 @@ class UnaryExpr(Expr):
             return False
         return self.operator == other.operator and self.right == other.right
 
+    def __hash__(self):
+        return id(self)
+
     def __repr__(self):
         return f'UnaryExpr(operator={self.operator}, right={self.right})'
 
@@ -148,6 +163,9 @@ class VariableExpr(Expr):
         if type(self) != type(other):
             return False
         return self.name == other.name
+
+    def __hash__(self):
+        return id(self)
 
     def __repr__(self):
         return f'VariableExpr(name={self.name})'
@@ -167,6 +185,9 @@ class AssignmentExpr(Expr):
             return False
         return self.name == other.name and self.value == other.value
 
+    def __hash__(self):
+        return id(self)
+
     def __repr__(self):
         return f'AssignmentExpr(name={self.name}, value={self.value})'
 
@@ -185,6 +206,9 @@ class CallExpr(Expr):
         if type(self) != type(other):
             return False
         return self.callee == other.callee and self.paren == other.paren and self.arguments == other.arguments
+
+    def __hash__(self):
+        return id(self)
 
     def __repr__(self):
         return f'CallExpr(callee={self.callee}, paren={self.paren}, arguments={self.arguments})'
