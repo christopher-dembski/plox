@@ -28,10 +28,15 @@ class TestCaseWithHelpers(unittest.TestCase):
             "Expected no error to be printed to std_err."
         )
 
-    def assert_prints_to_std_err(self, source: str):
+    def assert_prints_to_std_err(self, source: str, error_message=None):
         with redirect_stderr(StringIO()) as std_err:
             Lox().run(source)
-        self.assertTrue(std_err.getvalue(), msg='Expected error to be printed to std_err.')
+        if error_message is None:
+            self.assertTrue(std_err.getvalue(), msg='Expected error to be printed to std_err.')
+        else:
+            actual_error_message = std_err.getvalue()
+            self.assertTrue(error_message in actual_error_message,
+                            msg=f'Expected {actual_error_message} to contain {error_message} as a substring.')
 
     def assert_print_expression(self, source: str, expcted_std_out: str):
         self.assert_prints(f'print {source};', expcted_std_out)

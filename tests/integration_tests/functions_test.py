@@ -59,3 +59,13 @@ class TestDeclarationAndAssignment(TestCaseWithHelpers):
                  'counter();' \
                  'counter();'
         self.assert_prints(source, ['1', '2'])
+
+    def test_invalid_return_from_top_level(self):
+        self.assert_prints_to_std_err('return;', "Can't return from top-level code.")
+
+    def test_read_variable_in_own_initializer(self):
+        source = 'var a = outer;' \
+                 '{' \
+                 '  var a = a;' \
+                 '}'
+        self.assert_prints_to_std_err(source, "Can't read local variable in its own initializer.")
