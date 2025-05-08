@@ -40,6 +40,10 @@ class StmtVisitor(ABC):
         pass
 
     @abstractmethod
+    def visit_class_stmt(self, stmt):
+        pass
+
+    @abstractmethod
     def visit_if_stmt(self, stmt):
         pass
 
@@ -170,6 +174,27 @@ class FunctionStmt(Stmt):
 
     def __repr__(self):
         return f'FunctionStmt(name={self.name}, params={self.params}, body={self.body})'
+
+
+class ClassStmt(Stmt):
+
+    def __init__(self, name: Token, methods: Iterable[FunctionStmt]):
+        self.name = name
+        self.methods = methods
+
+    def accept(self, visitor: StmtVisitor):
+        return visitor.visit_class_stmt(self)
+
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+        return self.name == other.name and self.methods == other.methods
+
+    def __hash__(self):
+        return id(self)
+
+    def __repr__(self):
+        return f'ClassStmt(name={self.name}, methods={self.methods})'
 
 
 class IfStmt(Stmt):

@@ -1,5 +1,6 @@
 from typing import Sequence, Dict
 
+from lox_class import LoxClass
 from lox_function import LoxFunction
 from foreign_functions.clock import Clock
 from lox_callable import LoxCallable
@@ -8,7 +9,7 @@ from token_type import TokenType
 from lox_token import Token
 from expr import ExprVisitor, Expr, LiteralExpr, GroupingExpr, UnaryExpr, BinaryExpr, VariableExpr, AssignmentExpr, \
     LogicalExpr, CallExpr
-from stmt import StmtVisitor, Stmt, ExpressionStmt, PrintStmt, VarStmt, BlockStmt, IfStmt, WhileStmt
+from stmt import StmtVisitor, Stmt, ExpressionStmt, PrintStmt, VarStmt, BlockStmt, IfStmt, WhileStmt, ClassStmt
 from environment import Environment
 
 from runtime_exception import RuntimeException
@@ -158,6 +159,11 @@ class Interpreter(ExprVisitor, StmtVisitor):
                 statement.accept(self)
         finally:
             self.environment = previous_environment
+
+    def visit_class_stmt(self, stmt: ClassStmt):
+        self.environment.define(stmt.name.lexeme, None)
+        klass = LoxClass(stmt.name.lexeme)
+        self.environment.assign(stmt.name, klass)
 
     def visit_var_stmt(self, stmt: VarStmt) -> None:
         value = self.evaluate(stmt.initializer) if stmt.initializer else None

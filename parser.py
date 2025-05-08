@@ -1,5 +1,6 @@
-from typing import Sequence
+from typing import Sequence, List
 
+import stmt
 from lox_token import Token, TokenType
 from expr import Expr, BinaryExpr, UnaryExpr, LiteralExpr, GroupingExpr, VariableExpr, AssignmentExpr, LogicalExpr, \
     CallExpr
@@ -46,6 +47,8 @@ class Parser:
 
     def declaration(self) -> Stmt:
         try:
+            if self.match(TokenType.CLASS):
+                return self.class_declaration()
             if self.match(TokenType.FUN):
                 return self.function_declaration("function")
             if self.match(TokenType.VAR):
@@ -147,6 +150,15 @@ class Parser:
         self.consume(TokenType.LEFT_BRACE, f"Expect '{{' befoe {kind} body.")
         body = self.block_statement()
         return FunctionStmt(name, parameters, body)
+
+    def class_declaration(self):
+        name = self.consume(TokenType.IDENTIFIER, "Expect class name.")
+        self.consume(TokenType.LEFT_BRACE, "Expect '{' before class body.")
+        methods: List[FunctionStmt] = []
+        while not self.check(TokenType.RIGHT_BRACE) and not self.is_at_end():
+            methods.append(self.function_declaration("method"))
+        self.consume(TokenType.RIGHT_BRACE, "Expect '}' after class body.")
+        return stmt.ClassStmt(name, methods)
 
     def expression_statement(self) -> ExpressionStmt:
         value = self.expression()

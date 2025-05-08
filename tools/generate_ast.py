@@ -30,6 +30,7 @@ def main():
             "Return :: keyword: Token, value: Expr",
             "Block :: statements: Iterable[Stmt]",
             "Function :: name: Token, params: Sequence[Token], body: BlockStmt",
+            "Class :: name: Token, methods: Iterable[FunctionStmt]",
             "If :: condition: Expr, if_branch: Stmt, else_branch: Stmt",
             "While :: condition: Expr, body: Stmt"
         ]

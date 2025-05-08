@@ -4,7 +4,7 @@ from expr import ExprVisitor, Expr, VariableExpr, AssignmentExpr, BinaryExpr, Ca
     LogicalExpr, UnaryExpr
 from lox_token import Token
 from stmt import StmtVisitor, Stmt, BlockStmt, VarStmt, FunctionStmt, ExpressionStmt, IfStmt, PrintStmt, ReturnStmt, \
-    WhileStmt
+    WhileStmt, ClassStmt
 
 Scope = Dict[str, bool]
 
@@ -23,6 +23,10 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.begin_scope()
         self.resolve_stmts(stmt.statements)
         self.end_scope()
+
+    def visit_class_stmt(self, stmt: ClassStmt):
+        self.declare(stmt.name)
+        self.define(stmt.name)
 
     def visit_expression_stmt(self, stmt: ExpressionStmt):
         self.resolve_expr(stmt.expression)
