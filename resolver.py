@@ -15,10 +15,15 @@ class Resolver(ExprVisitor, StmtVisitor):
         FUNCTION = auto()
         METHOD = auto()
 
+    class ClassType(Enum):
+        NONE = auto()
+        CLASS = auto()
+
     def __init__(self, interpreter):
         self.interpreter = interpreter
         self.scopes: List[Scope] = []
         self.current_function: Resolver.FunctionType = Resolver.FunctionType.NONE
+        self.current_class = Resolver.ClassType.NONE
 
     def visit_block_stmt(self, stmt: BlockStmt):
         self.begin_scope()
@@ -26,6 +31,8 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.end_scope()
 
     def visit_class_stmt(self, stmt: ClassStmt):
+        enclosing_class = self.current_class
+        self.current_class = Resolver.ClassType.CLASS
         self.declare(stmt.name)
         self.define(stmt.name)
         self.begin_scope()
@@ -34,6 +41,7 @@ class Resolver(ExprVisitor, StmtVisitor):
             declaration = Resolver.FunctionType.METHOD
             self.resolve_function(method, declaration)
         self.end_scope()
+        self.current_class = enclosing_class
 
     def visit_expression_stmt(self, stmt: ExpressionStmt):
         self.resolve_expr(stmt.expression)
@@ -85,6 +93,9 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.resolve_expr(expr.obj)
 
     def visit_this_expr(self, expr: ThisExpr):
+        if self.current_class == Resolver.ClassType.NONE:
+            self.interpreter.lox.error_from_token(expr.keyword, "Can't use 'this' outside of a class.")
+            return
         self.resolve_local(expr, expr.keyword)
 
     def visit_grouping_expr(self, expr: GroupingExpr):

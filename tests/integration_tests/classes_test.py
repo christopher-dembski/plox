@@ -40,6 +40,9 @@ class TestClasses(TestCaseWithHelpers):
                  'cake.taste();'
         self.assert_prints(source, 'The German chocolate cake is delicious!')
 
+    def test_invalid_this(self):
+        self.assert_prints_to_std_err('print this.name;', "Can't use 'this' outside of a class.")
+
 
 if __name__ == '__main__':
     unittest.main()
