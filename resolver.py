@@ -13,6 +13,7 @@ class Resolver(ExprVisitor, StmtVisitor):
     class FunctionType(Enum):
         NONE = auto()
         FUNCTION = auto()
+        INITIALIZER = auto()
         METHOD = auto()
 
     class ClassType(Enum):
@@ -38,8 +39,8 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.begin_scope()
         self.scopes[-1]["this"] = True
         for method in stmt.methods:
-            declaration = Resolver.FunctionType.METHOD
-            self.resolve_function(method, declaration)
+            decl = Resolver.FunctionType.INITIALIZER if method.name.lexeme == "init" else Resolver.FunctionType.METHOD
+            self.resolve_function(method, decl)
         self.end_scope()
         self.current_class = enclosing_class
 
@@ -64,6 +65,8 @@ class Resolver(ExprVisitor, StmtVisitor):
         if self.current_function == Resolver.FunctionType.NONE:
             self.interpreter.lox.error_from_token(stmt.keyword, "Can't return from top-level code.")
         if stmt.value is not None:
+            if self.current_function == Resolver.FunctionType.INITIALIZER:
+                self.interpreter.lox.error_from_token(stmt.keyword, "Can't return a value from an initializer.")
             self.resolve_expr(stmt.value)
 
     def visit_var_stmt(self, stmt: VarStmt):

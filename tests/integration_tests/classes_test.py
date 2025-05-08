@@ -43,6 +43,38 @@ class TestClasses(TestCaseWithHelpers):
     def test_invalid_this(self):
         self.assert_prints_to_std_err('print this.name;', "Can't use 'this' outside of a class.")
 
+    def test_initializer(self):
+        source = 'class Cake {' \
+                 '  init(flavor) {' \
+                 '      this.flavor = flavor;' \
+                 '  }' \
+                 '}' \
+                 'var cake = Cake("Chocolate");' \
+                 'print cake.flavor;'
+        self.assert_prints(source, 'Chocolate')
+
+    def test_valid_return_from_initializer(self):
+        source = 'class Cake {' \
+                 '  init(flavor) {' \
+                 '      this.flavor = flavor;' \
+                 '      return;' \
+                 '      print "this is not printed";' \
+                 '  }' \
+                 '}' \
+                 'var cake = Cake("Chocolate");' \
+                 'print cake.flavor;'
+        self.assert_prints(source, "Chocolate")
+
+    def test_invalid_return_from_initializer(self):
+        source = 'class Cake {' \
+                 '  init(flavor) {' \
+                 '      this.flavor = flavor;' \
+                 '      return "piece of cake";' \
+                 '  }' \
+                 '}' \
+                 'var cake = Cake("Chocolate");'
+        self.assert_prints_to_std_err(source, "Can't return a value from an initializer.")
+
 
 if __name__ == '__main__':
     unittest.main()
