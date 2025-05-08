@@ -45,6 +45,10 @@ class ExprVisitor(ABC):
     def visit_call_expr(self, expr):
         pass
 
+    @abstractmethod
+    def visit_get_expr(self, expr):
+        pass
+
 
 class BinaryExpr(Expr):
 
@@ -212,3 +216,24 @@ class CallExpr(Expr):
 
     def __repr__(self):
         return f'CallExpr(callee={self.callee}, paren={self.paren}, arguments={self.arguments})'
+
+
+class GetExpr(Expr):
+
+    def __init__(self, obj: Expr, name: Token):
+        self.obj = obj
+        self.name = name
+
+    def accept(self, visitor: ExprVisitor):
+        return visitor.visit_get_expr(self)
+
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+        return self.obj == other.obj and self.name == other.name
+
+    def __hash__(self):
+        return id(self)
+
+    def __repr__(self):
+        return f'GetExpr(obj={self.obj}, name={self.name})'

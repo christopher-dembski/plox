@@ -4,11 +4,12 @@ from lox_class import LoxClass
 from lox_function import LoxFunction
 from foreign_functions.clock import Clock
 from lox_callable import LoxCallable
+from lox_instance import LoxInstance
 from lox_return import Return
 from token_type import TokenType
 from lox_token import Token
 from expr import ExprVisitor, Expr, LiteralExpr, GroupingExpr, UnaryExpr, BinaryExpr, VariableExpr, AssignmentExpr, \
-    LogicalExpr, CallExpr
+    LogicalExpr, CallExpr, GetExpr
 from stmt import StmtVisitor, Stmt, ExpressionStmt, PrintStmt, VarStmt, BlockStmt, IfStmt, WhileStmt, ClassStmt
 from environment import Environment
 
@@ -80,6 +81,12 @@ class Interpreter(ExprVisitor, StmtVisitor):
                 f"Received {len(arguments)} but expected {callee.arity()}."
             )
         return callee.call(self, arguments)
+
+    def visit_get_expr(self, expr: GetExpr):
+        obj = self.evaluate(expr.obj)
+        if type(obj) is LoxInstance:
+            return obj.get(expr.name)
+        raise RuntimeException(expr.name, "Only instances have properties.")
 
     def visit_binary_expr(self, expr: BinaryExpr) -> object:
         operator = expr.operator
@@ -162,7 +169,11 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
     def visit_class_stmt(self, stmt: ClassStmt):
         self.environment.define(stmt.name.lexeme, None)
-        klass = LoxClass(stmt.name.lexeme)
+        methods: Dict[str, LoxFunction] = {}
+        for method in stmt.methods:
+            function = LoxFunction(method, self.environment)
+            methods[method.name.lexeme] = function
+        klass = LoxClass(stmt.name.lexeme, methods)
         self.environment.assign(stmt.name, klass)
 
     def visit_var_stmt(self, stmt: VarStmt) -> None:

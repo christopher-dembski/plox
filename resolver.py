@@ -1,7 +1,7 @@
 from enum import Enum, auto
 from typing import Iterable, Dict, List
 from expr import ExprVisitor, Expr, VariableExpr, AssignmentExpr, BinaryExpr, CallExpr, GroupingExpr, LiteralExpr, \
-    LogicalExpr, UnaryExpr
+    LogicalExpr, UnaryExpr, GetExpr
 from lox_token import Token
 from stmt import StmtVisitor, Stmt, BlockStmt, VarStmt, FunctionStmt, ExpressionStmt, IfStmt, PrintStmt, ReturnStmt, \
     WhileStmt, ClassStmt
@@ -13,6 +13,7 @@ class Resolver(ExprVisitor, StmtVisitor):
     class FunctionType(Enum):
         NONE = auto()
         FUNCTION = auto()
+        METHOD = auto()
 
     def __init__(self, interpreter):
         self.interpreter = interpreter
@@ -27,6 +28,9 @@ class Resolver(ExprVisitor, StmtVisitor):
     def visit_class_stmt(self, stmt: ClassStmt):
         self.declare(stmt.name)
         self.define(stmt.name)
+        for method in stmt.methods:
+            declaration = Resolver.FunctionType.METHOD
+            self.resolve_function(method, declaration)
 
     def visit_expression_stmt(self, stmt: ExpressionStmt):
         self.resolve_expr(stmt.expression)
@@ -73,6 +77,9 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.resolve_expr(expr.callee)
         for argument in expr.arguments:
             self.resolve_expr(argument)
+
+    def visit_get_expr(self, expr: GetExpr):
+        self.resolve_expr(expr.obj)
 
     def visit_grouping_expr(self, expr: GroupingExpr):
         self.resolve_expr(expr.expression)

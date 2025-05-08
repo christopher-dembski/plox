@@ -3,7 +3,7 @@ from typing import Sequence, List
 import stmt
 from lox_token import Token, TokenType
 from expr import Expr, BinaryExpr, UnaryExpr, LiteralExpr, GroupingExpr, VariableExpr, AssignmentExpr, LogicalExpr, \
-    CallExpr
+    CallExpr, GetExpr
 from stmt import Stmt, PrintStmt, ExpressionStmt, VarStmt, BlockStmt, IfStmt, WhileStmt, FunctionStmt, ReturnStmt
 
 
@@ -219,8 +219,14 @@ class Parser:
 
     def call(self) -> Expr:
         expr = self.primary()
-        while self.match(TokenType.LEFT_PAREN):
-            expr = self.finish_call(expr)
+        while True:
+            if self.match(TokenType.LEFT_PAREN):
+                expr = self.finish_call(expr)
+            elif self.match(TokenType.DOT):
+                name = self.consume(TokenType.IDENTIFIER, "Expect property name after '.'.")
+                expr = GetExpr(expr, name)
+            else:
+                break
         return expr
 
     def finish_call(self, callee: Expr) -> Expr:

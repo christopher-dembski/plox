@@ -19,6 +19,15 @@ class TestClasses(TestCaseWithHelpers):
                  'print bagel;'
         self.assert_prints(source, 'Bagel instance')
 
+    def test_call_method(self):
+        source = 'class Bacon {' \
+                 '  eat() {' \
+                 '      print "Crunch, crunch, crunch!";' \
+                 '  }' \
+                 '}' \
+                 'Bacon().eat();'
+        self.assert_prints(source, 'Crunch, crunch, crunch!')
+
 
 if __name__ == '__main__':
     unittest.main()

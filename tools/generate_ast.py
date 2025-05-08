@@ -18,7 +18,8 @@ def main():
             "Unary    :: operator: Token, right: Expr",
             "Variable :: name: Token",
             "Assignment :: name: Token, value: Expr",
-            "Call :: callee: Expr, paren: Token, arguments: Iterable[Expr]"
+            "Call :: callee: Expr, paren: Token, arguments: Iterable[Expr]",
+            "Get :: obj: Expr, name: Token"
         ]
     )
     define_ast(
