@@ -33,7 +33,7 @@ def main():
             "Return :: keyword: Token, value: Expr",
             "Block :: statements: Iterable[Stmt]",
             "Function :: name: Token, params: Sequence[Token], body: BlockStmt",
-            "Class :: name: Token, methods: Iterable[FunctionStmt]",
+            "Class :: name: Token, superclass: VariableExpr, methods: Iterable[FunctionStmt]",
             "If :: condition: Expr, if_branch: Stmt, else_branch: Stmt",
             "While :: condition: Expr, body: Stmt"
         ]
@@ -53,7 +53,7 @@ def define_ast(base_name: str, types: List[str]):
         if any(type_string.count('Token') for type_string in types):
             file.write('from lox_token import Token\n')
         if base_name != 'Expr':
-            file.write('from expr import Expr\n')
+            file.write('from expr import Expr, VariableExpr\n')
         file.write('\n\n')
         # base class
         file.write(f'class {base_name}(ABC):\n\n')

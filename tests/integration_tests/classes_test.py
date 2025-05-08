@@ -75,6 +75,27 @@ class TestClasses(TestCaseWithHelpers):
                  'var cake = Cake("Chocolate");'
         self.assert_prints_to_std_err(source, "Can't return a value from an initializer.")
 
+    def test_inheritance(self):
+        source = 'class Doughnut {' \
+                 '  cook() {' \
+                 '      print "Fry until golden brown.";' \
+                 '  }' \
+                 '}' \
+                 'class BostonCream < Doughnut {}' \
+                 'BostonCream().cook();'
+        self.assert_prints(source, "Fry until golden brown.")
+
+    def test_invalid_inherit_form_self(self):
+        self.assert_prints_to_std_err(
+            "class Doughnut < Doughnut {}",
+            "A class can't inherit from itself."
+        )
+
+    def test_invalid_inherit_form_not_a_class(self):
+        source = 'var NotAClass = "not a class";' \
+                 'class Doughnut < NotAClass {}'
+        self.assert_prints_to_std_err(source, "Superclass must be a class.")
+
 
 if __name__ == '__main__':
     unittest.main()

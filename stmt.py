@@ -3,7 +3,7 @@ from typing import Iterable
 from typing import Sequence
 
 from lox_token import Token
-from expr import Expr
+from expr import Expr, VariableExpr
 
 
 class Stmt(ABC):
@@ -178,8 +178,9 @@ class FunctionStmt(Stmt):
 
 class ClassStmt(Stmt):
 
-    def __init__(self, name: Token, methods: Iterable[FunctionStmt]):
+    def __init__(self, name: Token, superclass: VariableExpr, methods: Iterable[FunctionStmt]):
         self.name = name
+        self.superclass = superclass
         self.methods = methods
 
     def accept(self, visitor: StmtVisitor):
@@ -188,13 +189,13 @@ class ClassStmt(Stmt):
     def __eq__(self, other):
         if type(self) != type(other):
             return False
-        return self.name == other.name and self.methods == other.methods
+        return self.name == other.name and self.superclass == other.superclass and self.methods == other.methods
 
     def __hash__(self):
         return id(self)
 
     def __repr__(self):
-        return f'ClassStmt(name={self.name}, methods={self.methods})'
+        return f'ClassStmt(name={self.name}, superclass={self.superclass}, methods={self.methods})'
 
 
 class IfStmt(Stmt):
