@@ -150,7 +150,7 @@ class Scanner:
 
     @staticmethod
     def is_digit(char: str) -> bool:
-        return '0' <= char <= '9' or char == '.'
+        return '0' <= char <= '9'
 
     @staticmethod
     def is_alpha(char: str) -> bool:

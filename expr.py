@@ -34,6 +34,14 @@ class ExprVisitor(ABC):
         pass
 
     @abstractmethod
+    def visit_set_expr(self, expr):
+        pass
+
+    @abstractmethod
+    def visit_this_expr(self, expr):
+        pass
+
+    @abstractmethod
     def visit_variable_expr(self, expr):
         pass
 
@@ -153,6 +161,48 @@ class UnaryExpr(Expr):
 
     def __repr__(self):
         return f'UnaryExpr(operator={self.operator}, right={self.right})'
+
+
+class SetExpr(Expr):
+
+    def __init__(self, obj: Expr, name: Token, value: Expr):
+        self.obj = obj
+        self.name = name
+        self.value = value
+
+    def accept(self, visitor: ExprVisitor):
+        return visitor.visit_set_expr(self)
+
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+        return self.obj == other.obj and self.name == other.name and self.value == other.value
+
+    def __hash__(self):
+        return id(self)
+
+    def __repr__(self):
+        return f'SetExpr(obj={self.obj}, name={self.name}, value={self.value})'
+
+
+class ThisExpr(Expr):
+
+    def __init__(self, keyword: Token):
+        self.keyword = keyword
+
+    def accept(self, visitor: ExprVisitor):
+        return visitor.visit_this_expr(self)
+
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+        return self.keyword == other.keyword
+
+    def __hash__(self):
+        return id(self)
+
+    def __repr__(self):
+        return f'ThisExpr(keyword={self.keyword})'
 
 
 class VariableExpr(Expr):

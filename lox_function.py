@@ -2,6 +2,7 @@ from typing import Sequence
 
 from environment import Environment
 from lox_callable import LoxCallable
+from lox_instance import LoxInstance
 from lox_return import Return
 from stmt import FunctionStmt
 
@@ -10,6 +11,11 @@ class LoxFunction(LoxCallable):
     def __init__(self, declaration: FunctionStmt, closure: Environment):
         self.declaration = declaration
         self.closure = closure
+
+    def bind(self, instance: LoxInstance):
+        environment = Environment(self.closure)
+        environment.define("this", instance)
+        return LoxFunction(self.declaration, environment)
 
     def call(self, interpreter, arguments: Sequence[object]) -> object:
         environment = Environment(self.closure)

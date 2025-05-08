@@ -28,6 +28,18 @@ class TestClasses(TestCaseWithHelpers):
                  'Bacon().eat();'
         self.assert_prints(source, 'Crunch, crunch, crunch!')
 
+    def test_set_and_this_keyword(self):
+        source = 'class Cake {' \
+                 '  taste() {' \
+                 '      var adjective = "delicious";' \
+                 '      print "The " + this.flavor + " cake is " + adjective + "!";' \
+                 '  }' \
+                 '}' \
+                 'var cake = Cake();' \
+                 'cake.flavor = "German chocolate";' \
+                 'cake.taste();'
+        self.assert_prints(source, 'The German chocolate cake is delicious!')
+
 
 if __name__ == '__main__':
     unittest.main()

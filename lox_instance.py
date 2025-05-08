@@ -14,8 +14,11 @@ class LoxInstance:
             return self.fields[name.lexeme]
         method = self.klass.find_method(name.lexeme)
         if method is not None:
-            return method
+            return method.bind(self)
         raise RuntimeException(name, f"Undefined property '{name.lexeme}'.")
+
+    def set(self, name: Token, value: object):
+        self.fields[name.lexeme] = value
 
     def __repr__(self):
         return f'{self.klass.name} instance'

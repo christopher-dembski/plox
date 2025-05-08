@@ -16,6 +16,8 @@ def main():
             "Grouping :: expression: Expr",
             "Literal  :: value: object",
             "Unary    :: operator: Token, right: Expr",
+            "Set :: obj: Expr, name: Token, value: Expr",
+            "This :: keyword: Token",
             "Variable :: name: Token",
             "Assignment :: name: Token, value: Expr",
             "Call :: callee: Expr, paren: Token, arguments: Iterable[Expr]",

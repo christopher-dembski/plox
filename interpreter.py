@@ -9,7 +9,7 @@ from lox_return import Return
 from token_type import TokenType
 from lox_token import Token
 from expr import ExprVisitor, Expr, LiteralExpr, GroupingExpr, UnaryExpr, BinaryExpr, VariableExpr, AssignmentExpr, \
-    LogicalExpr, CallExpr, GetExpr
+    LogicalExpr, CallExpr, GetExpr, ThisExpr, SetExpr
 from stmt import StmtVisitor, Stmt, ExpressionStmt, PrintStmt, VarStmt, BlockStmt, IfStmt, WhileStmt, ClassStmt
 from environment import Environment
 
@@ -133,6 +133,14 @@ class Interpreter(ExprVisitor, StmtVisitor):
             return left if not Interpreter.is_truthy(left) else self.evaluate(expr.right)
         raise AssertionError('This case should not be reachable. Invalid operator for logical expression.')
 
+    def visit_set_expr(self, expr: SetExpr):
+        obj = self.evaluate(expr.obj)
+        if type(obj) is not LoxInstance:
+            raise RuntimeException(expr.name, "Only instances have fields.")
+        value = self.evaluate(expr.value)
+        obj.set(expr.name, value)
+        return value
+
     def visit_expression_stmt(self, stmt: ExpressionStmt) -> None:
         self.evaluate(stmt.expression)
 
@@ -188,6 +196,9 @@ class Interpreter(ExprVisitor, StmtVisitor):
         else:
             self.globals.assign(expr.name, value)
         return value
+
+    def visit_this_expr(self, expr: ThisExpr):
+        return self.lookup_variable(expr.keyword, expr)
 
     def visit_variable_expr(self, expr: VariableExpr) -> object:
         return self.lookup_variable(expr.name, expr)

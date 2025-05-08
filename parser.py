@@ -3,7 +3,7 @@ from typing import Sequence, List
 import stmt
 from lox_token import Token, TokenType
 from expr import Expr, BinaryExpr, UnaryExpr, LiteralExpr, GroupingExpr, VariableExpr, AssignmentExpr, LogicalExpr, \
-    CallExpr, GetExpr
+    CallExpr, GetExpr, ThisExpr, SetExpr
 from stmt import Stmt, PrintStmt, ExpressionStmt, VarStmt, BlockStmt, IfStmt, WhileStmt, FunctionStmt, ReturnStmt
 
 
@@ -170,8 +170,11 @@ class Parser:
         if self.match(TokenType.EQUAL):
             value = self.assignment()
             if type(expr) is VariableExpr:
-                # we know expr is of typeVariableExpr and has a name attribute
+                # we know expr is of type VariableExpr and has a name attribute
                 return AssignmentExpr(expr.name, value)
+            elif type(expr) is GetExpr:
+                # we know expr is of type GetExpr and has obj and name attributes
+                return SetExpr(expr.obj, expr.name, value)
             equals_token = self.previous()
             self.lox.error_from_token(equals_token, 'Identifier expected.')
         return expr
@@ -248,22 +251,20 @@ class Parser:
     def primary(self) -> Expr:
         if self.match(TokenType.NUMBER, TokenType.STRING):
             return LiteralExpr(self.previous().literal)
-
+        if self.match(TokenType.THIS):
+            return ThisExpr(self.previous())
         if self.match(TokenType.IDENTIFIER):
             return VariableExpr(self.previous())
-
         if self.match(TokenType.TRUE):
             return LiteralExpr(True)
         if self.match(TokenType.FALSE):
             return LiteralExpr(False)
         if self.match(TokenType.NIL):
             return LiteralExpr(None)
-
         if self.match(TokenType.LEFT_PAREN):
             expr = self.expression()
             self.consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.")
             return GroupingExpr(expr)
-
         raise self.error(self.peek(), "Expect expression.")
 
     def consume(self, token_type: TokenType, message: str) -> Token:

@@ -1,7 +1,7 @@
 from enum import Enum, auto
 from typing import Iterable, Dict, List
 from expr import ExprVisitor, Expr, VariableExpr, AssignmentExpr, BinaryExpr, CallExpr, GroupingExpr, LiteralExpr, \
-    LogicalExpr, UnaryExpr, GetExpr
+    LogicalExpr, UnaryExpr, GetExpr, ThisExpr, SetExpr
 from lox_token import Token
 from stmt import StmtVisitor, Stmt, BlockStmt, VarStmt, FunctionStmt, ExpressionStmt, IfStmt, PrintStmt, ReturnStmt, \
     WhileStmt, ClassStmt
@@ -28,9 +28,12 @@ class Resolver(ExprVisitor, StmtVisitor):
     def visit_class_stmt(self, stmt: ClassStmt):
         self.declare(stmt.name)
         self.define(stmt.name)
+        self.begin_scope()
+        self.scopes[-1]["this"] = True
         for method in stmt.methods:
             declaration = Resolver.FunctionType.METHOD
             self.resolve_function(method, declaration)
+        self.end_scope()
 
     def visit_expression_stmt(self, stmt: ExpressionStmt):
         self.resolve_expr(stmt.expression)
@@ -81,6 +84,9 @@ class Resolver(ExprVisitor, StmtVisitor):
     def visit_get_expr(self, expr: GetExpr):
         self.resolve_expr(expr.obj)
 
+    def visit_this_expr(self, expr: ThisExpr):
+        self.resolve_local(expr, expr.keyword)
+
     def visit_grouping_expr(self, expr: GroupingExpr):
         self.resolve_expr(expr.expression)
 
@@ -91,6 +97,10 @@ class Resolver(ExprVisitor, StmtVisitor):
     def visit_logical_expr(self, expr: LogicalExpr):
         self.resolve_expr(expr.left)
         self.resolve_expr(expr.right)
+
+    def visit_set_expr(self, expr: SetExpr):
+        self.resolve_expr(expr.value)
+        self.resolve_expr(expr.obj)
 
     def visit_unary_expr(self, expr: UnaryExpr):
         self.resolve_expr(expr.right)
