@@ -19,7 +19,7 @@ class Lox:
     def main(self) -> None:
         file_name, command_line_args = sys.argv[0], sys.argv[1::]
         if len(command_line_args) > 1:
-            print('Usage: plox [script]')
+            print('Usage: python3 lox.py [script]')
             sys.exit(64)
         elif len(command_line_args) == 1:
             self.run_file(command_line_args[0])
