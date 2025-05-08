@@ -1,7 +1,7 @@
 from enum import Enum, auto
 from typing import Iterable, Dict, List
 from expr import ExprVisitor, Expr, VariableExpr, AssignmentExpr, BinaryExpr, CallExpr, GroupingExpr, LiteralExpr, \
-    LogicalExpr, UnaryExpr, GetExpr, ThisExpr, SetExpr
+    LogicalExpr, UnaryExpr, GetExpr, ThisExpr, SetExpr, SuperExpr
 from lox_token import Token
 from stmt import StmtVisitor, Stmt, BlockStmt, VarStmt, FunctionStmt, ExpressionStmt, IfStmt, PrintStmt, ReturnStmt, \
     WhileStmt, ClassStmt
@@ -19,6 +19,7 @@ class Resolver(ExprVisitor, StmtVisitor):
     class ClassType(Enum):
         NONE = auto()
         CLASS = auto()
+        SUBCLASS = auto()
 
     def __init__(self, interpreter):
         self.interpreter = interpreter
@@ -39,13 +40,18 @@ class Resolver(ExprVisitor, StmtVisitor):
         if stmt.superclass is not None:
             if stmt.name.lexeme == stmt.superclass.name.lexeme:
                 self.interpreter.lox.error_from_token(stmt.superclass.name, "A class can't inherit from itself.")
+            self.current_class = Resolver.ClassType.SUBCLASS
             self.resolve_expr(stmt.superclass)
+            self.begin_scope()
+            self.scopes[-1]["super"] = True
         self.begin_scope()
         self.scopes[-1]["this"] = True
         for method in stmt.methods:
             decl = Resolver.FunctionType.INITIALIZER if method.name.lexeme == "init" else Resolver.FunctionType.METHOD
             self.resolve_function(method, decl)
         self.end_scope()
+        if stmt.superclass is not None:
+            self.end_scope()
         self.current_class = enclosing_class
 
     def visit_expression_stmt(self, stmt: ExpressionStmt):
@@ -119,6 +125,13 @@ class Resolver(ExprVisitor, StmtVisitor):
     def visit_set_expr(self, expr: SetExpr):
         self.resolve_expr(expr.value)
         self.resolve_expr(expr.obj)
+
+    def visit_super_expr(self, expr: SuperExpr):
+        if self.current_class == Resolver.ClassType.NONE:
+            self.interpreter.lox.error_from_token(expr.keyword, "Can't use 'super' outside a class.")
+        elif self.current_class != Resolver.ClassType.SUBCLASS:
+            self.interpreter.lox.error_from_token(expr.keyword, "Can't use 'super' in a class with no superclass.")
+        self.resolve_local(expr, expr.keyword)
 
     def visit_unary_expr(self, expr: UnaryExpr):
         self.resolve_expr(expr.right)

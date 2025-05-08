@@ -3,7 +3,7 @@ from typing import Sequence, List
 import stmt
 from lox_token import Token, TokenType
 from expr import Expr, BinaryExpr, UnaryExpr, LiteralExpr, GroupingExpr, VariableExpr, AssignmentExpr, LogicalExpr, \
-    CallExpr, GetExpr, ThisExpr, SetExpr
+    CallExpr, GetExpr, ThisExpr, SetExpr, SuperExpr
 from stmt import Stmt, PrintStmt, ExpressionStmt, VarStmt, BlockStmt, IfStmt, WhileStmt, FunctionStmt, ReturnStmt
 
 
@@ -255,6 +255,11 @@ class Parser:
     def primary(self) -> Expr:
         if self.match(TokenType.NUMBER, TokenType.STRING):
             return LiteralExpr(self.previous().literal)
+        if self.match(TokenType.SUPER):
+            keyword = self.previous()
+            self.consume(TokenType.DOT, "Expect '.' after super.")
+            method = self.consume(TokenType.IDENTIFIER, "Expect superclass method name.")
+            return SuperExpr(keyword, method)
         if self.match(TokenType.THIS):
             return ThisExpr(self.previous())
         if self.match(TokenType.IDENTIFIER):

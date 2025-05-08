@@ -17,6 +17,7 @@ def main():
             "Literal  :: value: object",
             "Unary    :: operator: Token, right: Expr",
             "Set :: obj: Expr, name: Token, value: Expr",
+            "Super :: keyword: Token, method: Token",
             "This :: keyword: Token",
             "Variable :: name: Token",
             "Assignment :: name: Token, value: Expr",

@@ -96,6 +96,42 @@ class TestClasses(TestCaseWithHelpers):
                  'class Doughnut < NotAClass {}'
         self.assert_prints_to_std_err(source, "Superclass must be a class.")
 
+    def test_super(self):
+        source = 'class Doughnut {' \
+                 '  cook() {' \
+                 '      print "Fry until golden brown.";' \
+                 '  }' \
+                 '}' \
+                 'class BostonCream < Doughnut {' \
+                 '  cook() {' \
+                 '      super.cook();' \
+                 '      print "Pipe full of custard and coat with chocolate.";' \
+                 '  }' \
+                 '}' \
+                 'BostonCream().cook();'
+        self.assert_prints(
+            source,
+            ["Fry until golden brown.", "Pipe full of custard and coat with chocolate."]
+        )
+
+    def test_invalid_super_with_no_superclass(self):
+        source = 'class Eclair {' \
+                 '  cook() {' \
+                 '      super.cook();' \
+                 '      print "Pipe full of creme patissiere.";' \
+                 '  }' \
+                 '}'
+        self.assert_prints_to_std_err(
+            source,
+            "Can't use 'super' in a class with no superclass."
+        )
+
+    def test_invalid_super_outside_class(self):
+        self.assert_prints_to_std_err(
+            "super.notEvenInAClass();",
+            "Can't use 'super' outside a class."
+        )
+
 
 if __name__ == '__main__':
     unittest.main()

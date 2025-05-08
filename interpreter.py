@@ -9,7 +9,7 @@ from lox_return import Return
 from token_type import TokenType
 from lox_token import Token
 from expr import ExprVisitor, Expr, LiteralExpr, GroupingExpr, UnaryExpr, BinaryExpr, VariableExpr, AssignmentExpr, \
-    LogicalExpr, CallExpr, GetExpr, ThisExpr, SetExpr
+    LogicalExpr, CallExpr, GetExpr, ThisExpr, SetExpr, SuperExpr
 from stmt import StmtVisitor, Stmt, ExpressionStmt, PrintStmt, VarStmt, BlockStmt, IfStmt, WhileStmt, ClassStmt
 from environment import Environment
 
@@ -141,6 +141,15 @@ class Interpreter(ExprVisitor, StmtVisitor):
         obj.set(expr.name, value)
         return value
 
+    def visit_super_expr(self, expr: SuperExpr):
+        distance = self.locals[expr]
+        superclass = self.environment.get_at(distance, "super")
+        obj = self.environment.get_at(distance - 1, "this")
+        method = superclass.find_method(expr.method.lexeme)
+        if method is None:
+            raise RuntimeException(expr.method, f"Undefined property '{expr.method.lexeme}'.")
+        return method.bind(obj)
+
     def visit_expression_stmt(self, stmt: ExpressionStmt) -> None:
         self.evaluate(stmt.expression)
 
@@ -182,11 +191,16 @@ class Interpreter(ExprVisitor, StmtVisitor):
             if type(superclass) is not LoxClass:
                 raise RuntimeException(stmt.superclass.name, "Superclass must be a class.")
         self.environment.define(stmt.name.lexeme, None)
+        if stmt.superclass is not None:
+            self.environment = Environment(self.environment)
+            self.environment.define("super", superclass)
         methods: Dict[str, LoxFunction] = {}
         for method in stmt.methods:
             function = LoxFunction(method, self.environment, method.name.lexeme == "init")
             methods[method.name.lexeme] = function
         klass = LoxClass(stmt.name.lexeme, superclass, methods)
+        if superclass is not None:
+            self.environment = self.environment.enclosing
         self.environment.assign(stmt.name, klass)
 
     def visit_var_stmt(self, stmt: VarStmt) -> None:

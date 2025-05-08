@@ -38,6 +38,10 @@ class ExprVisitor(ABC):
         pass
 
     @abstractmethod
+    def visit_super_expr(self, expr):
+        pass
+
+    @abstractmethod
     def visit_this_expr(self, expr):
         pass
 
@@ -183,6 +187,27 @@ class SetExpr(Expr):
 
     def __repr__(self):
         return f'SetExpr(obj={self.obj}, name={self.name}, value={self.value})'
+
+
+class SuperExpr(Expr):
+
+    def __init__(self, keyword: Token, method: Token):
+        self.keyword = keyword
+        self.method = method
+
+    def accept(self, visitor: ExprVisitor):
+        return visitor.visit_super_expr(self)
+
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+        return self.keyword == other.keyword and self.method == other.method
+
+    def __hash__(self):
+        return id(self)
+
+    def __repr__(self):
+        return f'SuperExpr(keyword={self.keyword}, method={self.method})'
 
 
 class ThisExpr(Expr):
